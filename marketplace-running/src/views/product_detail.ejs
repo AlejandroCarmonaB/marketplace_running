@@ -1,0 +1,20 @@
+<%- include('partials/header') %>
+
+<h2>Detalle del producto</h2>
+
+<div class="producto-card">
+  <h3><%= producto.titulo %></h3>
+  <p><strong>Descripción:</strong> <%= producto.descripcion %></p>
+  <p><strong>Precio:</strong> <%= producto.precio %> €</p>
+  <p><strong>Categoría:</strong> <%= producto.nombre_categoria %></p>
+  <p><strong>Estado físico:</strong> <%= producto.estado_fisico %></p>
+  <p><strong>Estado de publicación:</strong> <%= producto.estado_publicacion %></p>
+  <p><strong>Stock:</strong> <%= producto.stock %></p>
+  <p><strong>Vendedor:</strong> <%= producto.vendedor %></p>
+</div>
+
+<p>
+  <a href="/">Volver al listado de productos</a>
+</p>
+
+<%- include('partials/footer') %>
