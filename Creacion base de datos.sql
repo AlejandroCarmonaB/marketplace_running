@@ -121,3 +121,5 @@ CREATE TABLE resenya_usuario (
     FOREIGN KEY (id_usuario_autor) REFERENCES usuario(id_usuario),
     FOREIGN KEY (id_usuario_resenyado) REFERENCES usuario(id_usuario)
 );
+
+CREATE UNIQUE INDEX rol_nombre_idx ON rol (LOWER(nombre_rol));
