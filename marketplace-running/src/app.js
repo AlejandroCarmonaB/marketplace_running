@@ -29,6 +29,11 @@ app.use(
   }),
 );
 
+app.use((req, res, next) => {
+  res.locals.usuarioSesion = req.session.usuario || null;
+  next();
+});
+
 // Rutas principales.
 app.use("/", indexRoutes);
 

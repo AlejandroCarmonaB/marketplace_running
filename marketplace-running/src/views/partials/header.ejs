@@ -8,11 +8,20 @@
 </head>
 <body>
     <header>
-    <h1>Marketplace Running</h1>
-    <nav>
+      <h1>Marketplace Running</h1>
+
+      <nav>
         <a href="/">Productos</a>
-        <a href="/login">Login</a>
-        <a href="/register">Registro</a>
-    </nav>
+
+        <% if (usuarioSesion) { %>
+          <a href="/mis-productos">Mis productos</a>
+          <a href="/publicar-producto">Publicar producto</a>
+          <span>Hola, <%= usuarioSesion.nickname %></span>
+          <a href="/logout">Cerrar sesión</a>
+        <% } else { %>
+          <a href="/login">Login</a>
+          <a href="/register">Registro</a>
+        <% } %>
+      </nav>
     </header>
     <main>

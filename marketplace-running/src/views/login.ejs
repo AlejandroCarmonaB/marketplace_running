@@ -1,15 +1,41 @@
 <%- include('partials/header') %>
 
-<h2>Iniciar sesión</h2>
+<section class="page-title">
+  <h2>Iniciar sesión</h2>
+  <p>Accede a tu cuenta para operar dentro de la plataforma.</p>
+</section>
 
-<form>
-  <label for="email">Correo electrónico</label>
-  <input type="email" id="email" name="email" />
+<section class="form-container">
+  <% if (error) { %>
+    <div class="mensaje-error">
+      <p><%= error %></p>
+    </div>
+  <% } %>
 
-  <label for="password">Contraseña</label>
-  <input type="password" id="password" name="password" />
+  <form action="/login" method="POST" class="formulario">
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input 
+        type="email" 
+        id="email" 
+        name="email" 
+        value="<%= datos.email || '' %>"
+        required
+      >
+    </div>
 
-  <button type="submit">Entrar</button>
-</form>
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <input 
+        type="password" 
+        id="password" 
+        name="password" 
+        required
+      >
+    </div>
+
+    <button type="submit" class="btn-principal">Entrar</button>
+  </form>
+</section>
 
 <%- include('partials/footer') %>

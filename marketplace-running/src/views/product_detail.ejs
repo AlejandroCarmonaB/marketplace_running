@@ -1,20 +1,41 @@
 <%- include('partials/header') %>
 
-<h2>Detalle del producto</h2>
+<section class="page-title">
+  <h2>Detalle del producto</h2>
+</section>
 
 <div class="producto-card">
-  <h3><%= producto.titulo %></h3>
-  <p><strong>Descripción:</strong> <%= producto.descripcion %></p>
-  <p><strong>Precio:</strong> <%= producto.precio %> €</p>
-  <p><strong>Categoría:</strong> <%= producto.nombre_categoria %></p>
-  <p><strong>Estado físico:</strong> <%= producto.estado_fisico %></p>
-  <p><strong>Estado de publicación:</strong> <%= producto.estado_publicacion %></p>
-  <p><strong>Stock:</strong> <%= producto.stock %></p>
-  <p><strong>Vendedor:</strong> <%= producto.vendedor %></p>
-</div>
+  <div class="producto-info">
+    <h3 class="producto-titulo"><%= producto.titulo %></h3>
 
-<p>
-  <a href="/">Volver al listado de productos</a>
-</p>
+    <p class="producto-descripcion">
+      <%= producto.descripcion %>
+    </p>
+
+    <p class="producto-precio">
+      <strong>Precio:</strong> <%= producto.precio %> €
+    </p>
+
+    <p class="producto-categoria">
+      <strong>Categoría:</strong> <%= producto.nombre_categoria %>
+    </p>
+
+    <p class="producto-estado">
+      <strong>Estado físico:</strong> <%= producto.estado_fisico %>
+    </p>
+
+    <p class="producto-stock">
+      <strong>Stock:</strong> <%= producto.stock %>
+    </p>
+
+    <p class="producto-vendedor">
+      <strong>Vendedor:</strong> <%= producto.vendedor %>
+    </p>
+
+    <form action="/carrito/agregar/<%= producto.id_prod %>" method="POST">
+      <button type="submit" class="btn-principal">Añadir al carrito</button>
+    </form>
+  </div>
+</div>
 
 <%- include('partials/footer') %>

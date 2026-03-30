@@ -8,7 +8,11 @@ class UsuarioService {
       WHERE nombre_rol = $1
     `;
 
-    const result = await pool.query(query, [nombreRol]);
+    const result = await pool.query(
+      query,
+      [nombreRol.trim().toLowerCase()]
+    );
+
     return result.rows[0]?.id_rol || null;
   }
 
@@ -38,10 +42,39 @@ class UsuarioService {
       RETURNING id_usuario, nombre, apellidos, nickname, email
     `;
 
-    const values = [idRol, nombre, apellidos, nickname, email, passwordHash, 'activa'];
+    const values = [
+      idRol,
+      nombre,
+      apellidos,
+      nickname,
+      email,
+      passwordHash,
+      'activa'
+    ];
 
     const result = await pool.query(query, values);
     return result.rows[0];
+  }
+
+  static async obtenerUsuarioPorEmail(email) {
+    const query = `
+      SELECT 
+        u.id_usuario,
+        u.id_rol,
+        u.nombre,
+        u.apellidos,
+        u.nickname,
+        u.email,
+        u.password,
+        u.estado_cuenta,
+        r.nombre_rol
+      FROM usuario u
+      JOIN rol r ON u.id_rol = r.id_rol
+      WHERE u.email = $1
+    `;
+
+    const result = await pool.query(query, [email.trim().toLowerCase()]);
+    return result.rows[0] || null;
   }
 }
 

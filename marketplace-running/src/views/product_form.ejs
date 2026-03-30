@@ -1,0 +1,84 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2><%= modoEdicion ? 'Editar producto' : 'Publicar producto' %></h2>
+</section>
+
+<section class="form-container">
+
+  <% if (error) { %>
+    <div class="mensaje-error"><p><%= error %></p></div>
+  <% } %>
+
+  <form 
+    action="<%= modoEdicion ? '/editar-producto/' + idProducto : '/publicar-producto' %>" 
+    method="POST"
+  >
+
+    <div class="form-group">
+      <label for="titulo">Título</label>
+      <input 
+        type="text" 
+        id="titulo" 
+        name="titulo" 
+        value="<%= datos.titulo || '' %>" 
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="descripcion">Descripción</label>
+      <textarea 
+        id="descripcion" 
+        name="descripcion" 
+        required
+      ><%= datos.descripcion || '' %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="precio">Precio</label>
+      <input 
+        type="number" 
+        id="precio" 
+        name="precio" 
+        step="0.01" 
+        min="0" 
+        value="<%= datos.precio || '' %>" 
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="estado_fisico">Estado físico</label>
+      <select id="estado_fisico" name="estado_fisico" required>
+        <option value="">Selecciona</option>
+        <option value="nuevo" <%= datos.estado_fisico === 'nuevo' ? 'selected' : '' %>>Nuevo</option>
+        <option value="usado" <%= datos.estado_fisico === 'usado' ? 'selected' : '' %>>Usado</option>
+        <option value="reacondicionado" <%= datos.estado_fisico === 'reacondicionado' ? 'selected' : '' %>>Reacondicionado</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="id_categoria">Categoría</label>
+      <select id="id_categoria" name="id_categoria" required>
+        <option value="">Selecciona</option>
+        <% categorias.forEach(cat => { %>
+          <option 
+            value="<%= cat.id_categoria %>"
+            <%= String(datos.id_categoria) === String(cat.id_categoria) ? 'selected' : '' %>
+          >
+            <%= cat.nombre_categoria %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-principal">
+      <%= modoEdicion ? 'Guardar cambios' : 'Publicar producto' %>
+    </button>
+
+  </form>
+
+</section>
+
+<%- include('partials/footer') %>
