@@ -6,6 +6,12 @@
 </section>
 
 <section class="form-container">
+  <% if (mensajeExito) { %>
+    <div class="mensaje-exito">
+      <p><%= mensajeExito %></p>
+    </div>
+  <% } %>
+
   <% if (error) { %>
     <div class="mensaje-error">
       <p><%= error %></p>

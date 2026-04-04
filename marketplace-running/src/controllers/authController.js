@@ -3,8 +3,12 @@ const AuthService = require('../services/authService');
 
 class AuthController {
   static mostrarFormularioLogin(req, res) {
+    const mensajeExito = req.session.mensajeExito || null;
+    req.session.mensajeExito = null;
+
     res.render('login', {
       error: null,
+      mensajeExito,
       datos: {}
     });
   }
@@ -16,7 +20,8 @@ class AuthController {
 
       if (!email || !password) {
         return res.status(400).render('login', {
-          error: 'Debes introducir correo y contraseña.',
+          error: 'Debes introducir el correo y la contraseña.',
+          mensajeExito: null,
           datos: { email }
         });
       }
@@ -24,15 +29,9 @@ class AuthController {
       const usuario = await UsuarioService.obtenerUsuarioPorEmail(email);
 
       if (!usuario) {
-        return res.status(400).render('login', {
+        return res.status(401).render('login', {
           error: 'Credenciales incorrectas.',
-          datos: { email }
-        });
-      }
-
-      if (usuario.estado_cuenta !== 'activa') {
-        return res.status(403).render('login', {
-          error: 'Tu cuenta no está activa.',
+          mensajeExito: null,
           datos: { email }
         });
       }
@@ -43,15 +42,15 @@ class AuthController {
       );
 
       if (!passwordCorrecta) {
-        return res.status(400).render('login', {
+        return res.status(401).render('login', {
           error: 'Credenciales incorrectas.',
+          mensajeExito: null,
           datos: { email }
         });
       }
 
       req.session.usuario = {
         id_usuario: usuario.id_usuario,
-        id_rol: usuario.id_rol,
         nombre: usuario.nombre,
         apellidos: usuario.apellidos,
         nickname: usuario.nickname,
@@ -65,7 +64,10 @@ class AuthController {
 
       return res.status(500).render('login', {
         error: 'Error interno del servidor.',
-        datos: {}
+        mensajeExito: null,
+        datos: {
+          email: req.body.email?.trim().toLowerCase() || ''
+        }
       });
     }
   }

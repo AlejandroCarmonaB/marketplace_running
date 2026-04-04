@@ -74,11 +74,9 @@ class UsuarioController {
         passwordHash
       });
 
-      return res.render('register', {
-        error: null,
-        exito: 'Usuario registrado correctamente.',
-        datos: {}
-      });
+      req.session.mensajeExito = 'Usuario registrado correctamente. Ya puedes iniciar sesión.';
+
+      return res.redirect('/login');
     } catch (error) {
       console.error('Error al registrar usuario:', error);
 

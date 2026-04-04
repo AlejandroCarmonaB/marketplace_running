@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<h2>Transacciones pendientes de verificación</h2>
+
+<% if (pendientes.length === 0) { %>
+  <p>No hay transacciones pendientes.</p>
+<% } else { %>
+
+  <% pendientes.forEach(t => { %>
+    <div class="producto-card">
+      <p><strong>ID:</strong> <%= t.id_transaccion %></p>
+      <p><strong>Comprador:</strong> <%= t.comprador %></p>
+      <p><strong>Vendedor:</strong> <%= t.vendedor %></p>
+      <p><strong>Total:</strong> <%= t.total_transaccion %> €</p>
+
+      <form action="/verificaciones/<%= t.id_transaccion %>" method="POST">
+        <button name="resultado" value="aprobada">Aprobar</button>
+        <button name="resultado" value="rechazada">Rechazar</button>
+        <input type="text" name="motivo" placeholder="Motivo rechazo (opcional)">
+      </form>
+    </div>
+  <% }) %>
+
+<% } %>
+
+<%- include('partials/footer') %>

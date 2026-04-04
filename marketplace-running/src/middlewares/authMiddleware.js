@@ -15,6 +15,14 @@ class AuthMiddleware {
 
     next();
   }
+
+  static soloAdmin(req, res, next) {
+    if (!req.session.usuario || req.session.usuario.nombre_rol !== 'administrador') {
+      return res.status(403).send('Acceso denegado');
+    }
+
+    next();
+  }
 }
 
 module.exports = AuthMiddleware;

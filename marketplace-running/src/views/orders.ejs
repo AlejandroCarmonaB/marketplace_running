@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2>Mis pedidos</h2>
+  <p>Consulta el historial de compras realizadas en la plataforma.</p>
+</section>
+
+<% if (pedidos.length === 0) { %>
+
+  <p class="no-products">
+    Todavía no has realizado ninguna compra.
+  </p>
+
+<% } else { %>
+
+  <% pedidos.forEach(pedido => { %>
+    <section class="form-container">
+      <h3>Pedido #<%= pedido.id_transaccion %></h3>
+      <p><strong>Fecha:</strong> <%= new Date(pedido.fecha_transaccion).toLocaleString('es-ES') %></p>
+      <p><strong>Vendedor:</strong> <%= pedido.vendedor %></p>
+      <p><strong>Estado:</strong> <%= pedido.estado_transaccion %></p>
+      <p><strong>Total:</strong> <%= Number(pedido.total_transaccion).toFixed(2) %> €</p>
+      <p><strong>Comisión plataforma:</strong> <%= Number(pedido.comision_plataforma).toFixed(2) %> €</p>
+      <p><strong>Importe vendedor:</strong> <%= Number(pedido.importe_vendedor).toFixed(2) %> €</p>
+
+      <div class="productos-grid">
+        <% pedido.productos.forEach(producto => { %>
+          <div class="producto-card">
+            <div class="producto-info">
+
+              <h4 class="producto-titulo">
+                <%= producto.titulo %>
+              </h4>
+
+              <p class="producto-stock">
+                <strong>Cantidad:</strong> <%= producto.cantidad %>
+              </p>
+
+              <p class="producto-precio">
+                <strong>Precio unitario:</strong> <%= Number(producto.precio_unitario).toFixed(2) %> €
+              </p>
+
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+    </section>
+  <% }) %>
+
+<% } %>
+
+<%- include('partials/footer') %>

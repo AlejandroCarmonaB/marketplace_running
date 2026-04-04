@@ -1,21 +1,28 @@
 const express = require('express');
 const router = express.Router();
 
+// Controllers
 const ProductoController = require('../controllers/productoController');
 const UsuarioController = require('../controllers/usuarioController');
 const AuthController = require('../controllers/authController');
-const AuthMiddleware = require('../middlewares/authMiddleware');
 const CarritoController = require('../controllers/carritoController');
+const TransaccionController = require('../controllers/transaccionController');
+const VerificacionController = require('../controllers/verificacionController');
+
+// Middlewares
+const AuthMiddleware = require('../middlewares/authMiddleware');
+
 
 // =========================
 // RUTAS PÚBLICAS
 // =========================
 
-// Página principal: listado de productos
+// Página principal (catálogo)
 router.get('/', ProductoController.mostrarProductos);
 
 // Detalle de producto
 router.get('/producto/:id', ProductoController.mostrarDetalleProducto);
+
 
 // =========================
 // AUTENTICACIÓN
@@ -33,6 +40,7 @@ router.post('/login', AuthController.iniciarSesion);
 // Logout
 router.get('/logout', AuthController.cerrarSesion);
 
+
 // =========================
 // REGISTRO
 // =========================
@@ -44,6 +52,7 @@ router.get(
 );
 
 router.post('/register', UsuarioController.registrarUsuario);
+
 
 // =========================
 // PRODUCTOS (PROTEGIDO)
@@ -84,12 +93,13 @@ router.post(
   ProductoController.editarProducto
 );
 
-// Eliminar lógicamente
+// Eliminación lógica
 router.post(
   '/eliminar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
   ProductoController.eliminarProducto
 );
+
 
 // =========================
 // CARRITO
@@ -122,5 +132,39 @@ router.post(
   AuthMiddleware.asegurarAutenticacion,
   CarritoController.comprar
 );
+
+
+// =========================
+// PEDIDOS (HISTORIAL)
+// =========================
+
+// Mis pedidos
+router.get(
+  '/mis-pedidos',
+  AuthMiddleware.asegurarAutenticacion,
+  TransaccionController.mostrarMisPedidos
+);
+
+
+// =========================
+// VERIFICACIONES (ADMIN)
+// =========================
+
+// Ver transacciones pendientes
+router.get(
+  '/verificaciones',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  VerificacionController.mostrarPendientes
+);
+
+// Procesar verificación
+router.post(
+  '/verificaciones/:id',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  VerificacionController.procesarVerificacion
+);
+
 
 module.exports = router;
