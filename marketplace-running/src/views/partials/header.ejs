@@ -14,15 +14,28 @@
         <a href="/">Productos</a>
 
         <% if (usuarioSesion) { %>
-          <a href="/mis-productos">Mis productos</a>
-          <a href="/publicar-producto">Publicar producto</a>
-          <a href="/mis-pedidos">Mis pedidos</a>
-          <span>Hola, <%= usuarioSesion.nickname %></span>
+
+          <% if (usuarioSesion.nombre_rol === 'usuario') { %>
+            <a href="/carrito">Carrito</a>
+            <a href="/mis-pedidos">Mis pedidos</a>
+            <a href="/mis-productos">Mis productos</a>
+            <a href="/publicar-producto">Publicar producto</a>
+
+          <% } else if (usuarioSesion.nombre_rol === 'administrador') { %>
+            <a href="/verificaciones">Verificaciones</a>
+
+          <% } else if (usuarioSesion.nombre_rol === 'analista') { %>
+            <a href="/analitica">Analítica</a>
+          <% } %>
+
+          <span>Hola, <%= usuarioSesion.nickname %> (<%= usuarioSesion.nombre_rol %>)</span>
           <a href="/logout">Cerrar sesión</a>
+
         <% } else { %>
           <a href="/login">Login</a>
           <a href="/register">Registro</a>
         <% } %>
+
       </nav>
     </header>
     <main>

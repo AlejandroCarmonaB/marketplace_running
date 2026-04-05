@@ -10,6 +10,7 @@ class TransaccionService {
         t.estado_transaccion,
         t.comision_plataforma,
         t.importe_vendedor,
+        t.id_vendedor,
         u.nickname AS vendedor,
         dt.id_prod,
         p.titulo,
@@ -39,6 +40,7 @@ class TransaccionService {
           estado_transaccion: row.estado_transaccion,
           comision_plataforma: row.comision_plataforma,
           importe_vendedor: row.importe_vendedor,
+          id_vendedor: row.id_vendedor,
           vendedor: row.vendedor,
           productos: []
         });

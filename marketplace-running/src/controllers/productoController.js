@@ -1,4 +1,5 @@
 const ProductoService = require('../services/productoService');
+const ResenyaProductoService = require('../services/resenyaProductoService');
 
 class ProductoController {
   static async mostrarProductos(req, res) {
@@ -44,7 +45,30 @@ class ProductoController {
         return res.status(404).send('Producto no encontrado');
       }
 
-      res.render('product_detail', { producto });
+      const resenyas = await ResenyaProductoService.obtenerResenyasDeProducto(idProducto);
+      const resumen = await ResenyaProductoService.obtenerResumenValoracionesProducto(idProducto);
+
+      let resenyaUsuario = null;
+      if (req.session.usuario) {
+        resenyaUsuario = await ResenyaProductoService.obtenerResenyaProductoUsuario(
+          req.session.usuario.id_usuario,
+          idProducto
+        );
+      }
+
+      const mensajeExito = req.session.mensajeExito || null;
+      const mensajeError = req.session.mensajeError || null;
+      delete req.session.mensajeExito;
+      delete req.session.mensajeError;
+
+      res.render('product_detail', {
+        producto,
+        resenyas,
+        resumen,
+        resenyaUsuario,
+        mensajeExito,
+        mensajeError
+      });
     } catch (error) {
       console.error('Error al obtener el detalle del producto:', error);
       res.status(500).send('Error interno del servidor');

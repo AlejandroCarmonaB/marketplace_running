@@ -90,21 +90,23 @@
             <strong>Estado de publicación:</strong> <%= producto.estado_publicacion %>
           </p>
 
-          <div class="producto-acciones">
-            <a href="/editar-producto/<%= producto.id_prod %>" class="btn-principal">
-              Editar
-            </a>
+          <% if (producto.estado_publicacion !== 'vendido') { %>
+            <div class="producto-acciones">
+              <a href="/editar-producto/<%= producto.id_prod %>" class="btn-principal">
+                Editar
+              </a>
 
-            <form action="/eliminar-producto/<%= producto.id_prod %>" method="POST" style="display:inline;">
-              <button 
-                type="submit" 
-                class="btn-principal"
-                onclick="return confirm('¿Seguro que quieres desactivar este producto?');"
-              >
-                Eliminar
-              </button>
-            </form>
-          </div>
+              <form action="/eliminar-producto/<%= producto.id_prod %>" method="POST" style="display:inline;">
+                <button 
+                  type="submit" 
+                  class="btn-principal"
+                  onclick="return confirm('¿Seguro que quieres desactivar este producto?');"
+                >
+                  Eliminar
+                </button>
+              </form>
+            </div>
+          <% } %>
         </div>
 
       </div>

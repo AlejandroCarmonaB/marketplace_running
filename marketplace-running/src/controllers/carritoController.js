@@ -88,9 +88,9 @@ class CarritoController {
       });
 
       req.session.carrito = [];
-      req.session.mensajeExito = 'Compra realizada correctamente.';
+      req.session.mensajeExito = 'Compra realizada correctamente. Tu pedido está pendiente de verificación.';
 
-      return res.redirect('/');
+      return res.redirect('/mis-pedidos');
     } catch (error) {
       console.error('Error en la compra:', error);
       req.session.mensajeError = error.message || 'Error al procesar la compra.';

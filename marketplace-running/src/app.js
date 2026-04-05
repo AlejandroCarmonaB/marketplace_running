@@ -4,6 +4,8 @@ const session = require("express-session");
 require("dotenv").config();
 
 const indexRoutes = require("./routes/index");
+const resenyaUsuarioRoutes = require("./routes/resenyaUsuarioRoutes");
+const resenyaProductoRoutes = require("./routes/resenyaProductoRoutes");
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.use((req, res, next) => {
 
 // Rutas principales.
 app.use("/", indexRoutes);
+app.use("/", resenyaUsuarioRoutes);
+app.use("/", resenyaProductoRoutes);
 
 // Puerto del servidor.
 const PORT = process.env.PORT || 3000;

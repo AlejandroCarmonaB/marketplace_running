@@ -1,7 +1,8 @@
 <%- include('partials/header') %>
 
 <section class="page-title">
-  <h2>Detalle del producto</h2>
+  <h2>Perfil de <%= vendedor.nickname %></h2>
+  <p>Email: <%= vendedor.email %></p>
 </section>
 
 <% if (mensajeExito) { %>
@@ -41,64 +42,16 @@
 <% } %>
 
 <section class="form-container">
-  <div class="producto-card">
-
-    <% if (producto.imagen_principal) { %>
-      <img src="/<%= producto.imagen_principal %>" alt="Imagen del producto" class="producto-imagen">
-    <% } else { %>
-      <div class="producto-imagen-placeholder">Sin imagen</div>
-    <% } %>
-
-    <h3><%= producto.titulo %></h3>
-    <p><strong>Descripción:</strong> <%= producto.descripcion %></p>
-    <p><strong>Precio:</strong> <%= producto.precio %> €</p>
-    <p><strong>Estado:</strong> <%= producto.estado_fisico %></p>
-
-    <p>
-      <strong>Vendedor:</strong> 
-      <a href="/vendedor/<%= producto.id_vendedor %>">
-        <%= producto.vendedor %>
-      </a>
-    </p>
-
-    <p><strong>Stock disponible:</strong> <%= producto.stock %></p>
-
-    <% if (usuarioSesion && producto.stock > 0 && usuarioSesion.id_usuario !== producto.id_vendedor) { %>
-      <form method="POST" action="/carrito/agregar/<%= producto.id_prod %>">
-        <button type="submit" class="btn-principal">Añadir al carrito</button>
-      </form>
-    <% } %>
-
-    <% if (!usuarioSesion) { %>
-      <p>Debes iniciar sesión para comprar.</p>
-    <% } %>
-
-    <% if (producto.stock <= 0 && producto.estado_publicacion !== 'vendido') { %>
-      <p>Producto no disponible.</p>
-    <% } %>
-
-    <% if (producto.estado_publicacion === 'vendido') { %>
-      <% if (usuarioSesion && usuarioSesion.id_usuario === producto.id_vendedor) { %>
-        <p class="producto-estado-aviso">Este producto ya ha sido vendido.</p>
-      <% } else { %>
-        <p class="producto-estado-aviso">Este producto no está disponible.</p>
-      <% } %>
-    <% } %>
-
-  </div>
-</section>
-
-<section class="form-container">
-  <h3>Valoraciones del producto</h3>
+  <h3>Valoraciones</h3>
   <p>Media: <strong><%= resumen.media_valoraciones %></strong> ⭐</p>
   <p>Total reseñas: <%= resumen.total_resenyas %></p>
 </section>
 
-<% if (usuarioSesion && usuarioSesion.id_usuario !== producto.id_vendedor) { %>
+<% if (usuarioSesion && usuarioSesion.id_usuario !== vendedor.id_usuario) { %>
   <section class="form-container">
     <h3><%= resenyaUsuario ? "Editar tu reseña" : "Dejar una reseña" %></h3>
 
-    <form method="POST" action="/producto/<%= producto.id_prod %>/resena" class="formulario">
+    <form method="POST" action="/vendedor/<%= vendedor.id_usuario %>/resena" class="formulario">
       <div class="form-group">
         <label for="valoracion">Valoración (1-5):</label>
         <select name="valoracion" id="valoracion" required>

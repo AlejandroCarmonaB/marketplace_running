@@ -6,7 +6,13 @@ class TransaccionController {
       const idComprador = req.session.usuario.id_usuario;
       const pedidos = await TransaccionService.obtenerPedidosPorComprador(idComprador);
 
-      res.render('orders', { pedidos });
+      const mensajeExito = req.session.mensajeExito || null;
+      delete req.session.mensajeExito;
+
+      res.render('orders', {
+        pedidos,
+        mensajeExito
+      });
     } catch (error) {
       console.error('Error al obtener los pedidos del usuario:', error);
       res.status(500).send('Error interno del servidor');

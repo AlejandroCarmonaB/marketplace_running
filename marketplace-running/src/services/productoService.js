@@ -102,12 +102,18 @@ class ProductoService {
         p.estado_fisico,
         p.estado_publicacion,
         c.nombre_categoria,
-        u.nickname AS vendedor
+        u.nickname AS vendedor,
+        (
+          SELECT ip.url_imagen
+          FROM imagen_producto ip
+          WHERE ip.id_prod = p.id_prod
+          ORDER BY ip.id_imagen ASC
+          LIMIT 1
+        ) AS imagen_principal
       FROM producto p
       JOIN categoria c ON p.id_categoria = c.id_categoria
       JOIN usuario u ON p.id_vendedor = u.id_usuario
       WHERE p.id_prod = $1
-      AND p.estado_publicacion = 'activo'
     `;
 
     const result = await pool.query(query, [idProducto]);
@@ -191,7 +197,9 @@ class ProductoService {
     const query = `
       SELECT *
       FROM producto
-      WHERE id_prod = $1 AND id_vendedor = $2
+      WHERE id_prod = $1
+        AND id_vendedor = $2
+        AND estado_publicacion <> 'vendido'
     `;
 
     const result = await pool.query(query, [idProducto, idVendedor]);
@@ -208,6 +216,7 @@ class ProductoService {
           id_categoria = $5
       WHERE id_prod = $6
         AND id_vendedor = $7
+        AND estado_publicacion <> 'vendido'
       RETURNING id_prod
     `;
 
@@ -229,7 +238,9 @@ class ProductoService {
     const query = `
       UPDATE producto
       SET estado_publicacion = 'inactivo'
-      WHERE id_prod = $1 AND id_vendedor = $2
+      WHERE id_prod = $1
+        AND id_vendedor = $2
+        AND estado_publicacion <> 'vendido'
       RETURNING id_prod
     `;
 

@@ -5,6 +5,24 @@
   <p>Consulta el historial de compras realizadas en la plataforma.</p>
 </section>
 
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito" id="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-exito');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
 <% if (pedidos.length === 0) { %>
 
   <p class="no-products">
@@ -29,7 +47,9 @@
             <div class="producto-info">
 
               <h4 class="producto-titulo">
-                <%= producto.titulo %>
+                <a href="/producto/<%= producto.id_prod %>">
+                  <%= producto.titulo %>
+                </a>
               </h4>
 
               <p class="producto-stock">
@@ -44,6 +64,14 @@
           </div>
         <% }) %>
       </div>
+
+      <% if (pedido.estado_transaccion === 'completada') { %>
+        <div class="producto-acciones">
+          <a href="/vendedor/<%= pedido.id_vendedor %>" class="btn-principal">
+            Ver perfil del vendedor
+          </a>
+        </div>
+      <% } %>
 
     </section>
   <% }) %>
