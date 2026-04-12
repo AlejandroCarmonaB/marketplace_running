@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2>Dashboard de Analítica</h2>
+  <p>Resumen de ventas del sistema</p>
+</section>
+
+<section class="form-container">
+  <canvas id="graficoVentas"></canvas>
+</section>
+
+<script id="chart-data" type="application/json">
+  <%- JSON.stringify({ labels, datos }) %>
+</script>
+<!-- Cargar Chart.js desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+  const labels = chartData.labels;
+  const datos = chartData.datos;
+
+  const ctx = document.getElementById('graficoVentas');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Ventas (€)',
+        data: datos
+      }]
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

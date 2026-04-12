@@ -45,7 +45,7 @@
 
         <% if (producto.imagen_principal) { %>
           <img 
-            src="/<%= producto.imagen_principal %>"
+            src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
             alt="Imagen de <%= producto.titulo %>"
             class="producto-imagen"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"

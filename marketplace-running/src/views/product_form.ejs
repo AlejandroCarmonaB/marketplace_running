@@ -13,6 +13,7 @@
   <form 
     action="<%= modoEdicion ? '/editar-producto/' + idProducto : '/publicar-producto' %>" 
     method="POST"
+    enctype="multipart/form-data"
   >
 
     <div class="form-group">
@@ -52,9 +53,11 @@
       <label for="estado_fisico">Estado físico</label>
       <select id="estado_fisico" name="estado_fisico" required>
         <option value="">Selecciona</option>
-        <option value="nuevo" <%= datos.estado_fisico === 'nuevo' ? 'selected' : '' %>>Nuevo</option>
-        <option value="usado" <%= datos.estado_fisico === 'usado' ? 'selected' : '' %>>Usado</option>
-        <option value="reacondicionado" <%= datos.estado_fisico === 'reacondicionado' ? 'selected' : '' %>>Reacondicionado</option>
+        <option value="como nuevo" <%= datos.estado_fisico === 'como nuevo' ? 'selected' : '' %>>Como nuevo</option>
+        <option value="excelente estado" <%= datos.estado_fisico === 'excelente estado' ? 'selected' : '' %>>Excelente estado</option>
+        <option value="muy poco uso" <%= datos.estado_fisico === 'muy poco uso' ? 'selected' : '' %>>Muy poco uso</option>
+        <option value="buen estado" <%= datos.estado_fisico === 'buen estado' ? 'selected' : '' %>>Buen estado</option>
+        <option value="uso moderado" <%= datos.estado_fisico === 'uso moderado' ? 'selected' : '' %>>Uso moderado</option>
       </select>
     </div>
 
@@ -73,6 +76,29 @@
       </select>
     </div>
 
+    <div class="form-group">
+      <label for="imagenes">Imágenes del producto</label>
+
+      <div id="zona-drop" class="zona-drop">
+        <p>Arrastra aquí tus imágenes o pulsa para seleccionarlas</p>
+        <input 
+          type="file" 
+          id="imagenes" 
+          name="imagenes" 
+          multiple 
+          accept="image/jpeg,image/png,image/webp"
+          style="display: none;"
+        >
+        <button type="button" id="btn-seleccionar-imagenes" class="btn-principal">
+          Seleccionar imágenes
+        </button>
+      </div>
+
+      <small>Máximo 5 imágenes. Formatos permitidos: JPG, PNG y WEBP.</small>
+
+      <div id="preview-imagenes" class="preview-imagenes"></div>
+    </div>
+
     <button type="submit" class="btn-principal">
       <%= modoEdicion ? 'Guardar cambios' : 'Publicar producto' %>
     </button>
@@ -80,5 +106,74 @@
   </form>
 
 </section>
+
+<script>
+  const inputImagenes = document.getElementById('imagenes');
+  const previewImagenes = document.getElementById('preview-imagenes');
+  const zonaDrop = document.getElementById('zona-drop');
+  const btnSeleccionar = document.getElementById('btn-seleccionar-imagenes');
+
+  btnSeleccionar.addEventListener('click', () => {
+    inputImagenes.click();
+  });
+
+  zonaDrop.addEventListener('click', (event) => {
+    if (event.target !== btnSeleccionar) {
+      inputImagenes.click();
+    }
+  });
+
+  inputImagenes.addEventListener('change', actualizarPreview);
+
+  zonaDrop.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    zonaDrop.classList.add('zona-drop-activa');
+  });
+
+  zonaDrop.addEventListener('dragleave', () => {
+    zonaDrop.classList.remove('zona-drop-activa');
+  });
+
+  zonaDrop.addEventListener('drop', (event) => {
+    event.preventDefault();
+    zonaDrop.classList.remove('zona-drop-activa');
+
+    const archivos = Array.from(event.dataTransfer.files).filter(file =>
+      ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+    );
+
+    const dataTransfer = new DataTransfer();
+
+    archivos.slice(0, 5).forEach(file => dataTransfer.items.add(file));
+    inputImagenes.files = dataTransfer.files;
+
+    actualizarPreview();
+  });
+
+  function actualizarPreview() {
+    previewImagenes.innerHTML = '';
+
+    const archivos = Array.from(inputImagenes.files);
+
+    archivos.slice(0, 5).forEach(file => {
+      const lector = new FileReader();
+
+      lector.onload = function (event) {
+        const contenedor = document.createElement('div');
+        contenedor.className = 'preview-item';
+
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        img.alt = file.name;
+        img.className = 'preview-img';
+
+        contenedor.appendChild(img);
+        previewImagenes.appendChild(contenedor);
+      };
+
+      lector.readAsDataURL(file);
+    });
+  }
+</script>
 
 <%- include('partials/footer') %>

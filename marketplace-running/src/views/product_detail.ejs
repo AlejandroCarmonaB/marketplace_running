@@ -44,7 +44,11 @@
   <div class="producto-card">
 
     <% if (producto.imagen_principal) { %>
-      <img src="/<%= producto.imagen_principal %>" alt="Imagen del producto" class="producto-imagen">
+      <img 
+        src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
+        alt="Imagen del producto"
+        class="producto-imagen"
+      >
     <% } else { %>
       <div class="producto-imagen-placeholder">Sin imagen</div>
     <% } %>

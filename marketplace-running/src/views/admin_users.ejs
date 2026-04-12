@@ -1,0 +1,119 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2>Gestión de usuarios</h2>
+  <p>Consulta, filtra y actualiza el estado de las cuentas registradas en la plataforma.</p>
+</section>
+
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito" id="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-exito');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="mensaje-error" id="mensaje-error">
+    <p><%= mensajeError %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-error');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<section class="form-container">
+  <form method="GET" action="/admin/usuarios" class="formulario">
+    <div class="form-group">
+      <label for="q">Buscar por email o nickname</label>
+      <input
+        type="text"
+        id="q"
+        name="q"
+        value="<%= termino %>"
+        placeholder="Introduce email o nickname"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="estado">Filtrar por estado</label>
+      <select id="estado" name="estado">
+        <option value="" <%= !estado ? 'selected' : '' %>>Todos</option>
+        <option value="activa" <%= estado === 'activa' ? 'selected' : '' %>>Activa</option>
+        <option value="bloqueada" <%= estado === 'bloqueada' ? 'selected' : '' %>>Bloqueada</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-principal">Aplicar filtros</button>
+  </form>
+</section>
+
+<% if (usuarios.length === 0) { %>
+  <p class="no-products">No se han encontrado usuarios con esos criterios.</p>
+<% } else { %>
+  <div class="productos-grid">
+    <% usuarios.forEach(usuario => { %>
+      <div class="producto-card">
+        <div class="producto-info">
+          <h3 class="producto-titulo"><%= usuario.nickname %></h3>
+
+          <p><strong>Nombre:</strong> <%= usuario.nombre %> <%= usuario.apellidos %></p>
+          <p><strong>Email:</strong> <%= usuario.email %></p>
+          <p><strong>Rol:</strong> <%= usuario.nombre_rol %></p>
+          <p><strong>Estado:</strong> <%= usuario.estado_cuenta %></p>
+
+          <% if (usuarioSesion && usuarioSesion.id_usuario !== usuario.id_usuario) { %>
+            <div class="producto-acciones">
+              <% if (usuario.estado_cuenta === 'activa') { %>
+                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST">
+                  <input type="hidden" name="nuevoEstado" value="bloqueada">
+                  <button
+                    type="submit"
+                    class="btn-principal"
+                    onclick="return confirm('¿Seguro que quieres bloquear esta cuenta?');"
+                  >
+                    Bloquear
+                  </button>
+                </form>
+              <% } else { %>
+                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST">
+                  <input type="hidden" name="nuevoEstado" value="activa">
+                  <button
+                    type="submit"
+                    class="btn-principal"
+                    onclick="return confirm('¿Seguro que quieres reactivar esta cuenta?');"
+                  >
+                    Reactivar
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p><strong>Acción:</strong> No disponible sobre tu propia cuenta</p>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

@@ -164,6 +164,17 @@ class ProductoService {
     return result.rows[0] || null;
   }
 
+  static async insertarImagenes(idProducto, rutas) {
+    const query = `
+      INSERT INTO imagen_producto (id_prod, url_imagen)
+      VALUES ($1, $2)
+    `;
+
+    for (const ruta of rutas) {
+      await pool.query(query, [idProducto, ruta]);
+    }
+  }
+
   static async obtenerProductosPorVendedor(idVendedor) {
     const query = `
       SELECT 
@@ -245,6 +256,71 @@ class ProductoService {
     `;
 
     const result = await pool.query(query, [idProducto, idVendedor]);
+    return result.rows[0] || null;
+  }
+
+  static async obtenerProductosParaAdmin({ termino = '', estado = '' }) {
+    let query = `
+      SELECT
+        p.id_prod,
+        p.id_vendedor,
+        p.titulo,
+        p.descripcion,
+        p.precio,
+        p.stock,
+        p.estado_fisico,
+        p.estado_publicacion,
+        c.nombre_categoria,
+        u.nickname AS vendedor,
+        (
+          SELECT ip.url_imagen
+          FROM imagen_producto ip
+          WHERE ip.id_prod = p.id_prod
+          ORDER BY ip.id_imagen ASC
+          LIMIT 1
+        ) AS imagen_principal
+      FROM producto p
+      JOIN categoria c ON p.id_categoria = c.id_categoria
+      JOIN usuario u ON p.id_vendedor = u.id_usuario
+      WHERE 1 = 1
+    `;
+
+    const values = [];
+    let index = 1;
+
+    if (termino && termino.trim() !== '') {
+      query += `
+        AND (
+          LOWER(p.titulo) LIKE LOWER($${index})
+          OR LOWER(u.nickname) LIKE LOWER($${index})
+        )
+      `;
+      values.push(`%${termino.trim()}%`);
+      index++;
+    }
+
+    if (estado && ['activo', 'inactivo', 'rechazado', 'vendido'].includes(estado)) {
+      query += ` AND p.estado_publicacion = $${index}`;
+      values.push(estado);
+      index++;
+    }
+
+    query += ` ORDER BY p.id_prod DESC`;
+
+    const result = await pool.query(query, values);
+    return result.rows;
+  }
+
+  static async actualizarEstadoPublicacionAdmin(idProducto, nuevoEstado) {
+    const query = `
+      UPDATE producto
+      SET estado_publicacion = $1
+      WHERE id_prod = $2
+        AND estado_publicacion <> 'vendido'
+      RETURNING id_prod, estado_publicacion
+    `;
+
+    const result = await pool.query(query, [nuevoEstado, idProducto]);
     return result.rows[0] || null;
   }
 

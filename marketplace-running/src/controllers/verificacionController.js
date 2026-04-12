@@ -4,7 +4,17 @@ class VerificacionController {
   static async mostrarPendientes(req, res) {
     try {
       const pendientes = await VerificacionService.obtenerPendientes();
-      res.render('verificaciones', { pendientes });
+
+      const mensajeExito = req.session.mensajeExito || null;
+      const mensajeError = req.session.mensajeError || null;
+      delete req.session.mensajeExito;
+      delete req.session.mensajeError;
+
+      res.render('verificaciones', {
+        pendientes,
+        mensajeExito,
+        mensajeError
+      });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error interno');
@@ -19,7 +29,13 @@ class VerificacionController {
       const valoresValidos = ['aprobada', 'rechazada'];
 
       if (!valoresValidos.includes(resultado)) {
-        return res.status(400).send('Resultado de verificación no válido');
+        req.session.mensajeError = 'Resultado de verificación no válido.';
+        return res.redirect('/verificaciones');
+      }
+
+      if (resultado === 'rechazada' && (!motivo || !motivo.trim())) {
+        req.session.mensajeError = 'Debes indicar un motivo al rechazar una verificación.';
+        return res.redirect('/verificaciones');
       }
 
       const idRevisor = req.session.usuario.id_usuario;
@@ -31,10 +47,12 @@ class VerificacionController {
         motivo
       });
 
-      res.redirect('/verificaciones');
+      req.session.mensajeExito = 'Verificación procesada correctamente.';
+      return res.redirect('/verificaciones');
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error al procesar verificación');
+      req.session.mensajeError = error.message || 'Error al procesar verificación.';
+      return res.redirect('/verificaciones');
     }
   }
 }

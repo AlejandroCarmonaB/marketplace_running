@@ -8,9 +8,12 @@ const AuthController = require('../controllers/authController');
 const CarritoController = require('../controllers/carritoController');
 const TransaccionController = require('../controllers/transaccionController');
 const VerificacionController = require('../controllers/verificacionController');
+const AdminController = require('../controllers/adminController');
+const AnaliticaController = require('../controllers/analiticaController');
 
 // Middlewares
 const AuthMiddleware = require('../middlewares/authMiddleware');
+const upload = require('../config/multer');
 
 
 // =========================
@@ -69,6 +72,7 @@ router.get(
 router.post(
   '/publicar-producto',
   AuthMiddleware.asegurarAutenticacion,
+  upload.array('imagenes', 5),
   ProductoController.publicarProducto
 );
 
@@ -90,6 +94,7 @@ router.get(
 router.post(
   '/editar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
+  upload.array('imagenes', 5),
   ProductoController.editarProducto
 );
 
@@ -147,14 +152,14 @@ router.get(
 
 
 // =========================
-// VERIFICACIONES (ADMIN)
+// VERIFICACIONES (ADMIN / VERIFICADOR)
 // =========================
 
 // Ver transacciones pendientes
 router.get(
   '/verificaciones',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOVerificador,
   VerificacionController.mostrarPendientes
 );
 
@@ -162,8 +167,58 @@ router.get(
 router.post(
   '/verificaciones/:id',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOVerificador,
   VerificacionController.procesarVerificacion
+);
+
+
+// =========================
+// ADMINISTRACIÓN DE USUARIOS
+// =========================
+
+router.get(
+  '/admin/usuarios',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  AdminController.mostrarUsuarios
+);
+
+router.post(
+  '/admin/usuarios/:id/estado',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  AdminController.cambiarEstadoCuenta
+);
+
+
+// =========================
+// ADMINISTRACIÓN DE PRODUCTOS
+// =========================
+
+router.get(
+  '/admin/productos',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  AdminController.mostrarProductos
+);
+
+router.post(
+  '/admin/productos/:id/estado',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdmin,
+  AdminController.cambiarEstadoProducto
+);
+
+
+// =========================
+// ANALÍTICA
+// =========================
+
+router.get(
+  '/analitica',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdminOAnalista,
+  AnaliticaController.mostrarDashboard
 );
 
 

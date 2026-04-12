@@ -1,0 +1,144 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2>Gestión de productos</h2>
+  <p>Consulta, filtra y modera las publicaciones de productos del marketplace.</p>
+</section>
+
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito" id="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-exito');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="mensaje-error" id="mensaje-error">
+    <p><%= mensajeError %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-error');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<section class="form-container">
+  <form method="GET" action="/admin/productos" class="formulario">
+    <div class="form-group">
+      <label for="q">Buscar por título o vendedor</label>
+      <input
+        type="text"
+        id="q"
+        name="q"
+        value="<%= termino %>"
+        placeholder="Introduce título o nickname"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="estado">Filtrar por estado</label>
+      <select id="estado" name="estado">
+        <option value="" <%= !estado ? 'selected' : '' %>>Todos</option>
+        <option value="activo" <%= estado === 'activo' ? 'selected' : '' %>>Activo</option>
+        <option value="inactivo" <%= estado === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
+        <option value="rechazado" <%= estado === 'rechazado' ? 'selected' : '' %>>Rechazado</option>
+        <option value="vendido" <%= estado === 'vendido' ? 'selected' : '' %>>Vendido</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-principal">Aplicar filtros</button>
+  </form>
+</section>
+
+<% if (productos.length === 0) { %>
+  <p class="no-products">No se han encontrado productos con esos criterios.</p>
+<% } else { %>
+  <div class="productos-grid">
+    <% productos.forEach(producto => { %>
+      <div class="producto-card">
+
+        <% if (producto.imagen_principal) { %>
+          <img 
+            src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
+            alt="Imagen de <%= producto.titulo %>"
+            class="producto-imagen"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          >
+          <div class="producto-imagen-placeholder" style="display: none;">
+            Sin imagen
+          </div>
+        <% } else { %>
+          <div class="producto-imagen-placeholder">
+            Sin imagen
+          </div>
+        <% } %>
+
+        <div class="producto-info">
+          <h3 class="producto-titulo">
+            <a href="/producto/<%= producto.id_prod %>">
+              <%= producto.titulo %>
+            </a>
+          </h3>
+
+          <p><strong>Vendedor:</strong> <%= producto.vendedor %></p>
+          <p><strong>Categoría:</strong> <%= producto.nombre_categoria %></p>
+          <p><strong>Precio:</strong> <%= Number(producto.precio).toFixed(2) %> €</p>
+          <p><strong>Estado físico:</strong> <%= producto.estado_fisico %></p>
+          <p><strong>Estado publicación:</strong> <%= producto.estado_publicacion %></p>
+
+          <% if (producto.estado_publicacion !== 'vendido') { %>
+            <div class="producto-acciones">
+              <% if (producto.estado_publicacion === 'activo') { %>
+                <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
+                  <input type="hidden" name="nuevoEstado" value="inactivo">
+                  <button
+                    type="submit"
+                    class="btn-principal"
+                    onclick="return confirm('¿Seguro que quieres desactivar este producto?');"
+                  >
+                    Desactivar
+                  </button>
+                </form>
+              <% } else { %>
+                <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
+                  <input type="hidden" name="nuevoEstado" value="activo">
+                  <button
+                    type="submit"
+                    class="btn-principal"
+                    onclick="return confirm('¿Seguro que quieres reactivar este producto?');"
+                  >
+                    Reactivar
+                  </button>
+                </form>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p><strong>Acción:</strong> No disponible sobre productos vendidos</p>
+          <% } %>
+        </div>
+
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

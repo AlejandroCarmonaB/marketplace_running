@@ -138,7 +138,13 @@ class ProductoController {
         });
       }
 
-      const estadosValidos = ['nuevo', 'usado', 'reacondicionado'];
+      const estadosValidos = [
+        'como nuevo',
+        'excelente estado',
+        'muy poco uso',
+        'buen estado',
+        'uso moderado'
+      ];
 
       if (!estadosValidos.includes(estadoFisico)) {
         return res.status(400).render('product_form', {
@@ -151,7 +157,7 @@ class ProductoController {
         });
       }
 
-      await ProductoService.crearProducto({
+      const productoCreado = await ProductoService.crearProducto({
         idVendedor,
         idCategoria,
         titulo,
@@ -161,6 +167,11 @@ class ProductoController {
         estadoFisico
       });
 
+      if (req.files && req.files.length > 0) {
+        const rutas = req.files.map(file => `uploads/productos/${file.filename}`);
+        await ProductoService.insertarImagenes(productoCreado.id_prod, rutas);
+      }
+
       req.session.mensajeExito = 'Producto publicado correctamente.';
       return res.redirect('/mis-productos');
     } catch (error) {
@@ -168,7 +179,7 @@ class ProductoController {
 
       return res.status(500).render('product_form', {
         categorias,
-        error: 'Error interno del servidor.',
+        error: error.message || 'Error interno del servidor.',
         exito: null,
         datos: req.body || {},
         modoEdicion: false,
@@ -268,7 +279,13 @@ class ProductoController {
         });
       }
 
-      const estadosValidos = ['nuevo', 'usado', 'reacondicionado'];
+      const estadosValidos = [
+        'como nuevo',
+        'excelente estado',
+        'muy poco uso',
+        'buen estado',
+        'uso moderado'
+      ];
 
       if (!estadosValidos.includes(estadoFisico)) {
         return res.status(400).render('product_form', {
@@ -295,6 +312,11 @@ class ProductoController {
         return res.status(404).send('Producto no encontrado o no te pertenece');
       }
 
+      if (req.files && req.files.length > 0) {
+        const rutas = req.files.map(file => `uploads/productos/${file.filename}`);
+        await ProductoService.insertarImagenes(idProducto, rutas);
+      }
+
       req.session.mensajeExito = 'Producto actualizado correctamente.';
       return res.redirect('/mis-productos');
     } catch (error) {
@@ -302,7 +324,7 @@ class ProductoController {
 
       return res.status(500).render('product_form', {
         categorias,
-        error: 'Error interno del servidor.',
+        error: error.message || 'Error interno del servidor.',
         exito: null,
         datos: { ...req.body, id_prod: req.params.id },
         modoEdicion: true,

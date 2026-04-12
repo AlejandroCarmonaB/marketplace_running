@@ -9,16 +9,50 @@ class VerificacionService {
         t.total_transaccion,
         t.estado_transaccion,
         u.nickname AS comprador,
-        v.nickname AS vendedor
+        v.nickname AS vendedor,
+        dt.id_prod,
+        p.titulo,
+        dt.cantidad,
+        dt.precio_unitario
       FROM transaccion t
-      JOIN usuario u ON t.id_comprador = u.id_usuario
-      JOIN usuario v ON t.id_vendedor = v.id_usuario
+      JOIN usuario u
+        ON t.id_comprador = u.id_usuario
+      JOIN usuario v
+        ON t.id_vendedor = v.id_usuario
+      JOIN detalle_transaccion dt
+        ON t.id_transaccion = dt.id_transaccion
+      JOIN producto p
+        ON dt.id_prod = p.id_prod
       WHERE t.estado_transaccion = 'pago_retenido'
-      ORDER BY t.fecha_transaccion ASC
+      ORDER BY t.fecha_transaccion ASC, t.id_transaccion ASC
     `;
 
     const result = await pool.query(query);
-    return result.rows;
+
+    const pendientesMap = new Map();
+
+    for (const row of result.rows) {
+      if (!pendientesMap.has(row.id_transaccion)) {
+        pendientesMap.set(row.id_transaccion, {
+          id_transaccion: row.id_transaccion,
+          fecha_transaccion: row.fecha_transaccion,
+          total_transaccion: row.total_transaccion,
+          estado_transaccion: row.estado_transaccion,
+          comprador: row.comprador,
+          vendedor: row.vendedor,
+          productos: []
+        });
+      }
+
+      pendientesMap.get(row.id_transaccion).productos.push({
+        id_prod: row.id_prod,
+        titulo: row.titulo,
+        cantidad: row.cantidad,
+        precio_unitario: row.precio_unitario
+      });
+    }
+
+    return Array.from(pendientesMap.values());
   }
 
   static async registrarVerificacion({ idTransaccion, idRevisor, resultado, motivo }) {

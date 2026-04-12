@@ -36,6 +36,14 @@ class AuthController {
         });
       }
 
+      if (usuario.estado_cuenta !== 'activa') {
+        return res.status(403).render('login', {
+          error: 'Tu cuenta está bloqueada. Contacta con un administrador.',
+          mensajeExito: null,
+          datos: { email }
+        });
+      }
+
       const passwordCorrecta = await AuthService.comprobarPassword(
         password,
         usuario.password

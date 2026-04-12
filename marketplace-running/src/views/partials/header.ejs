@@ -23,6 +23,12 @@
 
           <% } else if (usuarioSesion.nombre_rol === 'administrador') { %>
             <a href="/verificaciones">Verificaciones</a>
+            <a href="/admin/usuarios">Usuarios</a>
+            <a href="/admin/productos">Productos</a>
+            <a href="/analitica">Analítica</a>
+
+          <% } else if (usuarioSesion.nombre_rol === 'verificador') { %>
+            <a href="/verificaciones">Verificaciones</a>
 
           <% } else if (usuarioSesion.nombre_rol === 'analista') { %>
             <a href="/analitica">Analítica</a>

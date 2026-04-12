@@ -1,25 +1,113 @@
 <%- include('partials/header') %>
 
-<h2>Transacciones pendientes de verificación</h2>
+<section class="page-title">
+  <h2>Transacciones pendientes de verificación</h2>
+  <p>Gestiona las operaciones que todavía están en estado de pago retenido.</p>
+</section>
+
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito" id="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-exito');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="mensaje-error" id="mensaje-error">
+    <p><%= mensajeError %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-error');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
 
 <% if (pendientes.length === 0) { %>
-  <p>No hay transacciones pendientes.</p>
+  <p class="no-products">No hay transacciones pendientes.</p>
 <% } else { %>
 
   <% pendientes.forEach(t => { %>
-    <div class="producto-card">
-      <p><strong>ID:</strong> <%= t.id_transaccion %></p>
+    <section class="form-container">
+      <h3>Transacción #<%= t.id_transaccion %></h3>
+      <p><strong>Fecha:</strong> <%= new Date(t.fecha_transaccion).toLocaleString('es-ES') %></p>
       <p><strong>Comprador:</strong> <%= t.comprador %></p>
       <p><strong>Vendedor:</strong> <%= t.vendedor %></p>
-      <p><strong>Total:</strong> <%= t.total_transaccion %> €</p>
+      <p><strong>Estado:</strong> <%= t.estado_transaccion %></p>
+      <p><strong>Total:</strong> <%= Number(t.total_transaccion).toFixed(2) %> €</p>
 
-      <form action="/verificaciones/<%= t.id_transaccion %>" method="POST">
-        <button name="resultado" value="aprobada">Aprobar</button>
-        <button name="resultado" value="rechazada">Rechazar</button>
-        <input type="text" name="motivo" placeholder="Motivo rechazo (opcional)">
+      <div class="productos-grid">
+        <% t.productos.forEach(producto => { %>
+          <div class="producto-card">
+            <div class="producto-info">
+              <h4 class="producto-titulo"><%= producto.titulo %></h4>
+              <p class="producto-stock">
+                <strong>Cantidad:</strong> <%= producto.cantidad %>
+              </p>
+              <p class="producto-precio">
+                <strong>Precio unitario:</strong> <%= Number(producto.precio_unitario).toFixed(2) %> €
+              </p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <form action="/verificaciones/<%= t.id_transaccion %>" method="POST" class="formulario formulario-verificacion">
+        <div class="form-group">
+          <label for="motivo-<%= t.id_transaccion %>">Motivo del rechazo (obligatorio si se rechaza):</label>
+          <input
+            type="text"
+            id="motivo-<%= t.id_transaccion %>"
+            name="motivo"
+            placeholder="Motivo rechazo"
+          >
+        </div>
+
+        <div class="producto-acciones">
+          <button type="submit" name="resultado" value="aprobada" class="btn-principal">
+            Aprobar
+          </button>
+          <button type="submit" name="resultado" value="rechazada" class="btn-principal btn-rechazar">
+            Rechazar
+          </button>
+        </div>
       </form>
-    </div>
+    </section>
   <% }) %>
+
+  <script>
+    document.querySelectorAll('.formulario-verificacion').forEach(formulario => {
+      const botonRechazar = formulario.querySelector('.btn-rechazar');
+      const campoMotivo = formulario.querySelector('input[name="motivo"]');
+
+      if (botonRechazar && campoMotivo) {
+        botonRechazar.addEventListener('click', function (event) {
+          if (!campoMotivo.value.trim()) {
+            event.preventDefault();
+            alert('Debes indicar un motivo para rechazar la verificación.');
+          }
+        });
+      }
+    });
+  </script>
 
 <% } %>
 
