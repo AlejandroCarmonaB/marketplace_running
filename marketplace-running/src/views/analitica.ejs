@@ -1,37 +1,682 @@
 <%- include('partials/header') %>
 
 <section class="page-title">
-  <h2>Dashboard de Analítica</h2>
-  <p>Resumen de ventas del sistema</p>
+  <h2>Dashboard de analítica</h2>
+  <p>Resumen general del comportamiento del marketplace.</p>
 </section>
 
-<section class="form-container">
-  <canvas id="graficoVentas"></canvas>
-</section>
+<div class="analytics-tabs">
+  <a
+    href="/analitica?vista=general&anio=<%= filtros?.anio || '' %>&categoria=<%= filtros?.categoria || '' %>"
+    class="<%= vista === 'general' ? 'active' : '' %>"
+  >
+    Dashboard general
+  </a>
+  <a
+    href="/analitica?vista=usuario&anio=<%= filtros?.anio || '' %>&categoria=<%= filtros?.categoria || '' %>"
+    class="<%= vista === 'usuario' ? 'active' : '' %>"
+  >
+    Actividad de usuario
+  </a>
+</div>
 
-<script id="chart-data" type="application/json">
-  <%- JSON.stringify({ labels, datos }) %>
-</script>
-<!-- Cargar Chart.js desde CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<% if (vista === 'general') { %>
 
-<script>
-  const chartData = JSON.parse(document.getElementById('chart-data').textContent);
-  const labels = chartData.labels;
-  const datos = chartData.datos;
+  <section class="analytics-filters-wrapper">
+    <form method="GET" action="/analitica" class="analytics-filters">
+      <input type="hidden" name="vista" value="general">
 
-  const ctx = document.getElementById('graficoVentas');
+      <div class="analytics-filter-group">
+        <label for="anio">Año</label>
+        <select id="anio" name="anio">
+          <option value="">Todos los años</option>
+          <% aniosDisponibles.forEach(anioItem => { %>
+            <option value="<%= anioItem %>" <%= String(filtros.anio) === String(anioItem) ? 'selected' : '' %>>
+              <%= anioItem %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
 
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Ventas (€)',
-        data: datos
-      }]
+      <div class="analytics-filter-group">
+        <label for="categoria">Categoría</label>
+        <select id="categoria" name="categoria">
+          <option value="">Todas las categorías</option>
+          <% categorias.forEach(cat => { %>
+            <option value="<%= cat.id_categoria %>" <%= String(filtros.categoria) === String(cat.id_categoria) ? 'selected' : '' %>>
+              <%= cat.nombre_categoria %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="analytics-filter-actions">
+        <button type="submit" class="btn-principal">Aplicar filtros</button>
+        <a href="/analitica?vista=general" class="btn-principal btn-secundario-analitica">Limpiar filtros</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="analytics-kpis">
+    <div class="analytics-kpi-card">
+      <h3>Pedidos completados</h3>
+      <p><%= resumen.totalPedidosCompletados %></p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Ingresos totales</h3>
+      <p><%= Number(resumen.ingresosTotales).toFixed(2) %> €</p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Productos vendidos</h3>
+      <p><%= resumen.totalProductosVendidos %></p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Ventas retenidas</h3>
+      <p><%= resumen.ventasRetenidas %></p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Importe retenido</h3>
+      <p><%= Number(resumen.importeRetenido).toFixed(2) %> €</p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Media valoraciones</h3>
+      <p><%= Number(resumen.mediaValoraciones).toFixed(2) %> ⭐</p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Total reseñas</h3>
+      <p><%= resumen.totalResenyas %></p>
+    </div>
+  </section>
+
+  <section class="analytics-grid">
+    <div class="analytics-card analytics-card-wide">
+      <h3>Evolución temporal</h3>
+      <canvas id="graficoVentasMes"></canvas>
+    </div>
+
+    <div class="analytics-card">
+      <h3>Ventas por categoría</h3>
+      <canvas id="graficoVentasCategoria"></canvas>
+    </div>
+
+    <div class="analytics-card">
+      <h3>Estado de productos</h3>
+      <canvas id="graficoEstados"></canvas>
+    </div>
+
+    <div class="analytics-card">
+      <h3>Top vendedores</h3>
+      <canvas id="graficoTopVendedores"></canvas>
+    </div>
+
+    <div class="analytics-card">
+      <h3>Top compradores</h3>
+      <canvas id="graficoTopCompradores"></canvas>
+    </div>
+  </section>
+
+  <script id="dashboard-data" type="application/json">
+    <%- JSON.stringify({
+      resumen,
+      ventasMes,
+      ventasCategoria,
+      estados,
+      topVendedores,
+      topCompradores
+    }) %>
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    const dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+    const ventasMes = dashboardData.ventasMes;
+    const ventasCategoria = dashboardData.ventasCategoria;
+    const estados = dashboardData.estados;
+    const topVendedores = dashboardData.topVendedores;
+    const topCompradores = dashboardData.topCompradores;
+
+    const labelsMes = ventasMes.map(item => item.mes);
+    const pedidosMes = ventasMes.map(item => Number(item.total_pedidos));
+    const ingresosMes = ventasMes.map(item => Number(item.ingresos));
+
+    const labelsCategoria = ventasCategoria.map(item => item.nombre_categoria);
+    const datosCategoria = ventasCategoria.map(item => Number(item.total_vendidos));
+
+    const labelsEstados = estados.map(item => item.estado_publicacion);
+    const datosEstados = estados.map(item => Number(item.total));
+
+    const labelsTopVendedores = topVendedores.map(item => item.nickname);
+    const datosTopVendedores = topVendedores.map(item => Number(item.ventas));
+
+    const labelsTopCompradores = topCompradores.map(item => item.nickname);
+    const datosTopCompradores = topCompradores.map(item => Number(item.compras));
+
+    new Chart(document.getElementById('graficoVentasMes'), {
+      type: 'line',
+      data: {
+        labels: labelsMes,
+        datasets: [
+          {
+            label: 'Pedidos completados',
+            data: pedidosMes,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.15)',
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Ingresos (€)',
+            data: ingresosMes,
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22, 163, 74, 0.15)',
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            position: 'left'
+          },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('graficoVentasCategoria'), {
+      type: 'bar',
+      data: {
+        labels: labelsCategoria,
+        datasets: [
+          {
+            label: 'Productos vendidos',
+            data: datosCategoria,
+            backgroundColor: [
+              '#2563eb',
+              '#16a34a',
+              '#f59e0b',
+              '#dc2626',
+              '#7c3aed',
+              '#0891b2',
+              '#65a30d',
+              '#ea580c',
+              '#db2777',
+              '#4b5563'
+            ]
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('graficoEstados'), {
+      type: 'doughnut',
+      data: {
+        labels: labelsEstados,
+        datasets: [
+          {
+            data: datosEstados,
+            backgroundColor: [
+              '#2563eb',
+              '#16a34a',
+              '#f59e0b',
+              '#dc2626',
+              '#7c3aed',
+              '#0891b2'
+            ]
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('graficoTopVendedores'), {
+      type: 'bar',
+      data: {
+        labels: labelsTopVendedores,
+        datasets: [
+          {
+            label: 'Ventas completadas',
+            data: datosTopVendedores,
+            backgroundColor: '#2563eb'
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('graficoTopCompradores'), {
+      type: 'bar',
+      data: {
+        labels: labelsTopCompradores,
+        datasets: [
+          {
+            label: 'Compras realizadas',
+            data: datosTopCompradores,
+            backgroundColor: '#16a34a'
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+<% } else { %>
+
+  <section class="analytics-filters-wrapper">
+    <form method="GET" action="/analitica" class="analytics-filters">
+      <input type="hidden" name="vista" value="usuario">
+
+      <div class="analytics-filter-group">
+        <label for="usuario">Buscar usuario</label>
+        <input
+          type="text"
+          id="usuario"
+          name="usuario"
+          value="<%= usuarioBusqueda || '' %>"
+          placeholder="Nickname o email"
+        >
+      </div>
+
+      <div class="analytics-filter-group">
+        <label for="usuario_select">Seleccionar usuario</label>
+        <select
+          id="usuario_select"
+          onchange="document.getElementById('usuario').value = this.value"
+        >
+          <option value="">Selecciona usuario</option>
+          <% usuariosSelect.forEach(u => { %>
+            <option
+              value="<%= u.nickname %>"
+              <%= usuarioBusqueda === u.nickname || usuarioBusqueda === u.email ? 'selected' : '' %>
+            >
+              <%= u.nickname %> - <%= u.email %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="analytics-filter-group">
+        <label for="anio">Año</label>
+        <select id="anio" name="anio">
+          <option value="">Todos los años</option>
+          <% aniosDisponibles.forEach(anioItem => { %>
+            <option value="<%= anioItem %>" <%= String(filtros.anio) === String(anioItem) ? 'selected' : '' %>>
+              <%= anioItem %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="analytics-filter-group">
+        <label for="categoria">Categoría</label>
+        <select id="categoria" name="categoria">
+          <option value="">Todas las categorías</option>
+          <% categorias.forEach(cat => { %>
+            <option value="<%= cat.id_categoria %>" <%= String(filtros.categoria) === String(cat.id_categoria) ? 'selected' : '' %>>
+              <%= cat.nombre_categoria %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="analytics-filter-actions">
+        <button type="submit" class="btn-principal">Buscar</button>
+        <a href="/analitica?vista=usuario" class="btn-principal btn-secundario-analitica">Limpiar</a>
+      </div>
+    </form>
+  </section>
+
+  <% if (usuario) { %>
+    <section class="analytics-user-summary">
+      <h3>Analizando: <%= usuario.nickname %></h3>
+
+      <div class="analytics-kpis">
+        <div class="analytics-kpi-card">
+          <h3>Compras</h3>
+          <p><%= usuario.total_compras %></p>
+        </div>
+
+        <div class="analytics-kpi-card">
+          <h3>Ventas</h3>
+          <p><%= usuario.total_ventas %></p>
+        </div>
+
+        <div class="analytics-kpi-card">
+          <h3>Gasto total</h3>
+          <p><%= Number(usuario.gasto_total).toFixed(2) %> €</p>
+        </div>
+
+        <div class="analytics-kpi-card">
+          <h3>Ingresos</h3>
+          <p><%= Number(usuario.ingresos_total).toFixed(2) %> €</p>
+        </div>
+
+        <div class="analytics-kpi-card">
+          <h3>Reseñas</h3>
+          <p><%= Number(resenas.total_resenyas || 0) %></p>
+        </div>
+
+        <div class="analytics-kpi-card">
+          <h3>Media ⭐</h3>
+          <p><%= Number(resenas.media || 0).toFixed(2) %></p>
+        </div>
+      </div>
+
+      <div class="analytics-user-tables">
+        <div class="analytics-card">
+          <h3>Últimas compras</h3>
+
+          <% if (compras.length === 0) { %>
+            <p class="no-products">No hay compras con esos filtros.</p>
+          <% } else { %>
+            <div class="analytics-table-wrapper">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% compras.forEach(compra => { %>
+                    <tr>
+                      <td><%= new Date(compra.fecha_transaccion).toLocaleDateString('es-ES') %></td>
+                      <td><%= compra.titulo %></td>
+                      <td><%= Number(compra.precio_unitario).toFixed(2) %> €</td>
+                      <td><%= compra.estado_transaccion %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="analytics-card">
+          <h3>Últimas ventas</h3>
+
+          <% if (ventas.length === 0) { %>
+            <p class="no-products">No hay ventas con esos filtros.</p>
+          <% } else { %>
+            <div class="analytics-table-wrapper">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% ventas.forEach(venta => { %>
+                    <tr>
+                      <td><%= new Date(venta.fecha_transaccion).toLocaleDateString('es-ES') %></td>
+                      <td><%= venta.titulo %></td>
+                      <td><%= Number(venta.precio_unitario).toFixed(2) %> €</td>
+                      <td><%= venta.estado_transaccion %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  <% } else if (usuarioBusqueda) { %>
+    <section class="analytics-card">
+      <p class="no-products">No se ha encontrado ningún usuario con ese nickname o email.</p>
+    </section>
+  <% } else { %>
+    <section class="analytics-card">
+      <p class="no-products">Introduce un nickname o email para analizar la actividad de un usuario.</p>
+    </section>
+  <% } %>
+
+<% } %>
+
+<style>
+  .analytics-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .analytics-tabs a {
+    text-decoration: none;
+    padding: 0.85rem 1.2rem;
+    border-radius: 12px;
+    background: #e5e7eb;
+    color: #111827;
+    font-weight: 600;
+  }
+
+  .analytics-tabs a.active {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  .analytics-filters-wrapper {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1.5rem;
+  }
+
+  .analytics-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .analytics-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .analytics-filter-group label {
+    font-weight: 600;
+  }
+
+  .analytics-filter-group select,
+  .analytics-filter-group input {
+    padding: 0.7rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+  }
+
+  .analytics-filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-secundario-analitica {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .analytics-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .analytics-kpi-card,
+  .analytics-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .analytics-kpi-card h3,
+  .analytics-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .analytics-kpi-card p {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .analytics-user-tables {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .analytics-card {
+    min-height: 360px;
+  }
+
+  .analytics-card-wide {
+    grid-column: span 2;
+  }
+
+  .analytics-card canvas {
+    width: 100% !important;
+    height: 280px !important;
+  }
+
+  .analytics-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  .analytics-table th,
+  .analytics-table td {
+    text-align: left;
+    padding: 0.85rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .analytics-table th {
+    font-weight: 700;
+    background: #f9fafb;
+  }
+
+  .analytics-table tbody tr:hover {
+    background: #f3f4f6;
+  }
+
+  @media (max-width: 900px) {
+    .analytics-grid,
+    .analytics-user-tables {
+      grid-template-columns: 1fr;
     }
-  });
-</script>
+
+    .analytics-card-wide {
+      grid-column: span 1;
+    }
+
+    .analytics-filter-actions {
+      flex-direction: column;
+    }
+  }
+</style>
 
 <%- include('partials/footer') %>
