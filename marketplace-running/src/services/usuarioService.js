@@ -77,6 +77,26 @@ class UsuarioService {
     return result.rows[0] || null;
   }
 
+  static async obtenerUsuarioPorId(idUsuario) {
+    const query = `
+      SELECT 
+        u.id_usuario,
+        u.id_rol,
+        u.nombre,
+        u.apellidos,
+        u.nickname,
+        u.email,
+        u.estado_cuenta,
+        r.nombre_rol
+      FROM usuario u
+      JOIN rol r ON u.id_rol = r.id_rol
+      WHERE u.id_usuario = $1
+    `;
+
+    const result = await pool.query(query, [idUsuario]);
+    return result.rows[0] || null;
+  }
+
   static async obtenerUsuariosParaAdmin({ termino = '', estado = '' }) {
     let query = `
       SELECT

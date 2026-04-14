@@ -81,7 +81,10 @@
           <p><strong>Rol:</strong> <%= usuario.nombre_rol %></p>
           <p><strong>Estado:</strong> <%= usuario.estado_cuenta %></p>
 
-          <% if (usuarioSesion && usuarioSesion.id_usuario !== usuario.id_usuario) { %>
+          <% if (
+            usuarioSesion.id_usuario !== usuario.id_usuario &&
+            usuario.nombre_rol !== 'administrador'
+          ) { %>
             <div class="producto-acciones">
               <% if (usuario.estado_cuenta === 'activa') { %>
                 <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST">
@@ -107,8 +110,6 @@
                 </form>
               <% } %>
             </div>
-          <% } else { %>
-            <p><strong>Acción:</strong> No disponible sobre tu propia cuenta</p>
           <% } %>
         </div>
       </div>

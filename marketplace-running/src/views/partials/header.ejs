@@ -1,47 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketplace Running</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace Running</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-    <header>
-      <h1>Marketplace Running</h1>
+<body class="rol-<%= usuarioSesion ? usuarioSesion.nombre_rol : 'invitado' %>">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="site-brand">
+        <a href="/" class="site-brand-link">
+          <span class="site-brand-mark">MR</span>
+          <div class="site-brand-text">
+            <h1>Marketplace Running</h1>
+            <p>Segunda mano especializada en running</p>
+          </div>
+        </a>
+      </div>
 
-      <nav>
-        <a href="/">Productos</a>
+      <nav class="site-nav">
+        <a href="/" class="nav-link">Productos</a>
 
         <% if (usuarioSesion) { %>
 
           <% if (usuarioSesion.nombre_rol === 'usuario') { %>
-            <a href="/carrito">Carrito</a>
-            <a href="/mis-pedidos">Mis pedidos</a>
-            <a href="/mis-productos">Mis productos</a>
-            <a href="/publicar-producto">Publicar producto</a>
+            <a href="/carrito" class="nav-link">Carrito</a>
+            <a href="/mis-pedidos" class="nav-link">Mis pedidos</a>
+            <a href="/mis-productos" class="nav-link">Mis productos</a>
+            <a href="/publicar-producto" class="nav-link nav-link-accent">Publicar producto</a>
 
           <% } else if (usuarioSesion.nombre_rol === 'administrador') { %>
-            <a href="/verificaciones">Verificaciones</a>
-            <a href="/admin/usuarios">Usuarios</a>
-            <a href="/admin/productos">Productos</a>
-            <a href="/analitica">Analítica</a>
+            <a href="/verificaciones" class="nav-link">Verificaciones</a>
+            <a href="/admin/usuarios" class="nav-link">Usuarios</a>
+            <a href="/admin/productos" class="nav-link">Productos</a>
+            <a href="/analitica" class="nav-link nav-link-accent">Analítica</a>
 
           <% } else if (usuarioSesion.nombre_rol === 'verificador') { %>
-            <a href="/verificaciones">Verificaciones</a>
+            <a href="/verificaciones" class="nav-link nav-link-accent">Verificaciones</a>
 
           <% } else if (usuarioSesion.nombre_rol === 'analista') { %>
-            <a href="/analitica">Analítica</a>
+            <a href="/analitica" class="nav-link nav-link-accent">Analítica</a>
           <% } %>
 
-          <span>Hola, <%= usuarioSesion.nickname %> (<%= usuarioSesion.nombre_rol %>)</span>
-          <a href="/logout">Cerrar sesión</a>
-
         <% } else { %>
-          <a href="/login">Login</a>
-          <a href="/register">Registro</a>
+          <a href="/login" class="nav-link">Login</a>
+          <a href="/register" class="nav-link nav-link-accent">Registro</a>
         <% } %>
-
       </nav>
-    </header>
-    <main>
+
+      <% if (usuarioSesion) { %>
+        <div class="site-user-box">
+          <div class="site-user-meta">
+            <span class="site-user-greeting">Hola, <%= usuarioSesion.nickname %></span>
+            <span class="site-user-role"><%= usuarioSesion.nombre_rol %></span>
+          </div>
+          <a href="/logout" class="site-user-logout">Cerrar sesión</a>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <main class="site-main">

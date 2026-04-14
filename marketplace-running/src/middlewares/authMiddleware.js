@@ -23,6 +23,14 @@ class AuthMiddleware {
     next();
   }
 
+  static soloUsuario(req, res, next) {
+    if (!req.session.usuario || req.session.usuario.nombre_rol !== 'usuario') {
+      return res.status(403).send('Acceso denegado: solo los usuarios pueden realizar esta acción.');
+    }
+
+    next();
+  }
+
   static soloAdminOVerificador(req, res, next) {
     if (!req.session.usuario) {
       return res.status(403).send('Acceso denegado');

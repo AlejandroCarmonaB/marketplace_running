@@ -2,6 +2,11 @@ const UsuarioService = require('../services/usuarioService');
 const ProductoService = require('../services/productoService');
 
 class AdminController {
+
+  // =========================
+  // USUARIOS
+  // =========================
+
   static async mostrarUsuarios(req, res) {
     try {
       const termino = req.query.q || '';
@@ -25,6 +30,7 @@ class AdminController {
         mensajeError,
         usuarioSesion: req.session.usuario
       });
+
     } catch (error) {
       console.error('Error al mostrar usuarios de administración:', error);
       res.status(500).send('Error interno del servidor');
@@ -40,6 +46,7 @@ class AdminController {
         return res.redirect('/admin/usuarios');
       }
 
+      // 🔒 No puede modificarse a sí mismo
       if (req.session.usuario.id_usuario === idUsuario) {
         req.session.mensajeError = 'No puedes cambiar el estado de tu propia cuenta.';
         return res.redirect('/admin/usuarios');
@@ -52,6 +59,19 @@ class AdminController {
         return res.redirect('/admin/usuarios');
       }
 
+      const usuarioObjetivo = await UsuarioService.obtenerUsuarioPorId(idUsuario);
+
+      if (!usuarioObjetivo) {
+        req.session.mensajeError = 'Usuario no encontrado.';
+        return res.redirect('/admin/usuarios');
+      }
+
+      // 🔒 CLAVE: un admin NO puede bloquear a otro admin
+      if (usuarioObjetivo.nombre_rol === 'administrador') {
+        req.session.mensajeError = 'No puedes cambiar el estado de otro administrador.';
+        return res.redirect('/admin/usuarios');
+      }
+
       const actualizado = await UsuarioService.actualizarEstadoCuenta(idUsuario, nuevoEstado);
 
       if (!actualizado) {
@@ -61,12 +81,17 @@ class AdminController {
 
       req.session.mensajeExito = `Estado de cuenta actualizado a "${nuevoEstado}" correctamente.`;
       return res.redirect('/admin/usuarios');
+
     } catch (error) {
       console.error('Error al cambiar estado de cuenta:', error);
       req.session.mensajeError = 'Error al actualizar el estado de la cuenta.';
       return res.redirect('/admin/usuarios');
     }
   }
+
+  // =========================
+  // PRODUCTOS
+  // =========================
 
   static async mostrarProductos(req, res) {
     try {
@@ -91,6 +116,7 @@ class AdminController {
         mensajeError,
         usuarioSesion: req.session.usuario
       });
+
     } catch (error) {
       console.error('Error al mostrar productos de administración:', error);
       res.status(500).send('Error interno del servidor');
@@ -108,22 +134,29 @@ class AdminController {
 
       const { nuevoEstado } = req.body;
 
-      if (!['activo', 'inactivo', 'rechazado'].includes(nuevoEstado)) {
-        req.session.mensajeError = 'Estado de publicación no válido.';
+      // Ajusta estos estados si en tu BD tienes otros
+      const estadosValidos = ['activo', 'inactivo', 'rechazado'];
+
+      if (!estadosValidos.includes(nuevoEstado)) {
+        req.session.mensajeError = 'Estado de producto no válido.';
         return res.redirect('/admin/productos');
       }
 
-      const actualizado = await ProductoService.actualizarEstadoPublicacionAdmin(idProducto, nuevoEstado);
+      const producto = await ProductoService.obtenerProductoPorId(idProducto);
 
-      if (!actualizado) {
-        req.session.mensajeError = 'Producto no encontrado o no modificable.';
+      if (!producto) {
+        req.session.mensajeError = 'Producto no encontrado.';
         return res.redirect('/admin/productos');
       }
 
-      req.session.mensajeExito = `Estado del producto actualizado a "${nuevoEstado}" correctamente.`;
+      // ✅ CORREGIDO: método real de tu service
+      await ProductoService.actualizarEstadoPublicacionAdmin(idProducto, nuevoEstado);
+
+      req.session.mensajeExito = `Estado del producto actualizado a "${nuevoEstado}".`;
       return res.redirect('/admin/productos');
+
     } catch (error) {
-      console.error('Error al cambiar estado del producto:', error);
+      console.error('Error al cambiar estado de producto:', error);
       req.session.mensajeError = 'Error al actualizar el estado del producto.';
       return res.redirect('/admin/productos');
     }

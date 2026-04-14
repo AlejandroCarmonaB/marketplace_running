@@ -2,9 +2,6 @@ const ResenyaUsuarioService = require('../services/resenyaUsuarioService');
 const pool = require('../config/db');
 
 class ResenyaUsuarioController {
-  /**
-   * Mostrar perfil del vendedor con reseñas
-   */
   static async verPerfilVendedor(req, res) {
     try {
       const idVendedor = req.params.id;
@@ -26,8 +23,7 @@ class ResenyaUsuarioController {
       const resenyas = await ResenyaUsuarioService.obtenerResenyasDeVendedor(idVendedor);
 
       let resenyaUsuario = null;
-
-      if (usuarioSesion) {
+      if (usuarioSesion && usuarioSesion.nombre_rol === 'usuario') {
         resenyaUsuario = await ResenyaUsuarioService.obtenerResenyaUsuario(
           usuarioSesion.id_usuario,
           idVendedor
@@ -48,16 +44,12 @@ class ResenyaUsuarioController {
         mensajeExito,
         mensajeError
       });
-
     } catch (error) {
       console.error(error);
       res.status(500).send('Error al cargar el perfil del vendedor');
     }
   }
 
-  /**
-   * Guardar reseña (crear o actualizar)
-   */
   static async guardarResenya(req, res) {
     try {
       const usuarioSesion = req.session.usuario;
@@ -66,9 +58,12 @@ class ResenyaUsuarioController {
         return res.redirect('/login');
       }
 
+      if (usuarioSesion.nombre_rol !== 'usuario') {
+        return res.status(403).send('Solo los usuarios pueden enviar reseñas.');
+      }
+
       const idAutor = usuarioSesion.id_usuario;
       const idVendedor = req.params.id;
-
       const { valoracion, comentario } = req.body;
 
       await ResenyaUsuarioService.guardarResenyaVendedor({
@@ -80,7 +75,6 @@ class ResenyaUsuarioController {
 
       req.session.mensajeExito = 'Reseña del vendedor guardada correctamente.';
       return res.redirect(`/vendedor/${idVendedor}`);
-
     } catch (error) {
       console.error(error);
       req.session.mensajeError = error.message || 'Error al guardar la reseña del vendedor.';

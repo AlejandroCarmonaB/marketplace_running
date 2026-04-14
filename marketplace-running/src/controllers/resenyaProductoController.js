@@ -9,12 +9,17 @@ class ResenyaProductoController {
         return res.redirect('/login');
       }
 
+      if (usuarioSesion.nombre_rol !== 'usuario') {
+        return res.status(403).send('Solo los usuarios pueden enviar reseñas.');
+      }
+
       const idAutor = usuarioSesion.id_usuario;
       const idProducto = parseInt(req.params.id);
       const { valoracion, comentario } = req.body;
 
       if (isNaN(idProducto) || idProducto <= 0) {
-        return res.status(400).send('ID de producto no válido');
+        req.session.mensajeError = 'ID de producto no válido.';
+        return res.redirect('/');
       }
 
       await ResenyaProductoService.guardarResenyaProducto({

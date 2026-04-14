@@ -10,6 +10,8 @@ const TransaccionController = require('../controllers/transaccionController');
 const VerificacionController = require('../controllers/verificacionController');
 const AdminController = require('../controllers/adminController');
 const AnaliticaController = require('../controllers/analiticaController');
+const ResenyaProductoController = require('../controllers/resenyaProductoController');
+const ResenyaUsuarioController = require('../controllers/resenyaUsuarioController');
 
 // Middlewares
 const AuthMiddleware = require('../middlewares/authMiddleware');
@@ -25,6 +27,9 @@ router.get('/', ProductoController.mostrarProductos);
 
 // Detalle de producto
 router.get('/producto/:id', ProductoController.mostrarDetalleProducto);
+
+// Perfil de vendedor
+router.get('/vendedor/:id', ResenyaUsuarioController.verPerfilVendedor);
 
 
 // =========================
@@ -58,13 +63,14 @@ router.post('/register', UsuarioController.registrarUsuario);
 
 
 // =========================
-// PRODUCTOS (PROTEGIDO)
+// PRODUCTOS (SOLO USUARIO)
 // =========================
 
 // Formulario publicar producto
 router.get(
   '/publicar-producto',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   ProductoController.mostrarFormularioPublicar
 );
 
@@ -72,6 +78,7 @@ router.get(
 router.post(
   '/publicar-producto',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   upload.array('imagenes', 5),
   ProductoController.publicarProducto
 );
@@ -80,6 +87,7 @@ router.post(
 router.get(
   '/mis-productos',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   ProductoController.mostrarMisProductos
 );
 
@@ -87,6 +95,7 @@ router.get(
 router.get(
   '/editar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   ProductoController.mostrarFormularioEditar
 );
 
@@ -94,6 +103,7 @@ router.get(
 router.post(
   '/editar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   upload.array('imagenes', 5),
   ProductoController.editarProducto
 );
@@ -102,18 +112,20 @@ router.post(
 router.post(
   '/eliminar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   ProductoController.eliminarProducto
 );
 
 
 // =========================
-// CARRITO
+// CARRITO (SOLO USUARIO)
 // =========================
 
 // Añadir al carrito
 router.post(
   '/carrito/agregar/:id',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   CarritoController.agregarAlCarrito
 );
 
@@ -121,6 +133,7 @@ router.post(
 router.get(
   '/carrito',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   CarritoController.verCarrito
 );
 
@@ -128,6 +141,7 @@ router.get(
 router.post(
   '/carrito/eliminar/:id',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   CarritoController.eliminarDelCarrito
 );
 
@@ -135,19 +149,42 @@ router.post(
 router.post(
   '/carrito/comprar',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   CarritoController.comprar
 );
 
 
 // =========================
-// PEDIDOS (HISTORIAL)
+// PEDIDOS (SOLO USUARIO)
 // =========================
 
 // Mis pedidos
 router.get(
   '/mis-pedidos',
   AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
   TransaccionController.mostrarMisPedidos
+);
+
+
+// =========================
+// RESEÑAS (SOLO USUARIO)
+// =========================
+
+// Reseña de producto
+router.post(
+  '/producto/:id/resena',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
+  ResenyaProductoController.guardarResenya
+);
+
+// Reseña de vendedor
+router.post(
+  '/vendedor/:id/resena',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
+  ResenyaUsuarioController.guardarResenya
 );
 
 
@@ -220,6 +257,5 @@ router.get(
   AuthMiddleware.soloAdminOAnalista,
   AnaliticaController.mostrarDashboard
 );
-
 
 module.exports = router;

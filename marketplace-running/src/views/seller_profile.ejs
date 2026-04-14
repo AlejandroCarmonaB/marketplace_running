@@ -2,94 +2,41 @@
 
 <section class="page-title">
   <h2>Perfil de <%= vendedor.nickname %></h2>
-  <p>Email: <%= vendedor.email %></p>
 </section>
-
-<% if (mensajeExito) { %>
-  <div class="mensaje-exito" id="mensaje-exito">
-    <p><%= mensajeExito %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-exito');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
-<% } %>
-
-<% if (mensajeError) { %>
-  <div class="mensaje-error" id="mensaje-error">
-    <p><%= mensajeError %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-error');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
-<% } %>
 
 <section class="form-container">
   <h3>Valoraciones</h3>
   <p>Media: <strong><%= resumen.media_valoraciones %></strong> ⭐</p>
-  <p>Total reseñas: <%= resumen.total_resenyas %></p>
 </section>
 
-<% if (usuarioSesion && usuarioSesion.id_usuario !== vendedor.id_usuario) { %>
+<%
+  const esUsuarioNormal = usuarioSesion && usuarioSesion.nombre_rol === 'usuario';
+%>
+
+<% if (esUsuarioNormal && usuarioSesion.id_usuario !== vendedor.id_usuario) { %>
   <section class="form-container">
-    <h3><%= resenyaUsuario ? "Editar tu reseña" : "Dejar una reseña" %></h3>
+    <form method="POST" action="/vendedor/<%= vendedor.id_usuario %>/resena">
+      <select name="valoracion">
+        <% for (let i = 1; i <= 5; i++) { %>
+          <option value="<%= i %>"><%= i %> ⭐</option>
+        <% } %>
+      </select>
 
-    <form method="POST" action="/vendedor/<%= vendedor.id_usuario %>/resena" class="formulario">
-      <div class="form-group">
-        <label for="valoracion">Valoración (1-5):</label>
-        <select name="valoracion" id="valoracion" required>
-          <% for (let i = 1; i <= 5; i++) { %>
-            <option value="<%= i %>" <%= resenyaUsuario && resenyaUsuario.valoracion == i ? "selected" : "" %>>
-              <%= i %> ⭐
-            </option>
-          <% } %>
-        </select>
-      </div>
+      <textarea name="comentario"></textarea>
 
-      <div class="form-group">
-        <label for="comentario">Comentario:</label>
-        <textarea name="comentario" id="comentario" rows="4" required><%= resenyaUsuario ? resenyaUsuario.comentario : "" %></textarea>
-      </div>
-
-      <button type="submit" class="btn-principal">
-        <%= resenyaUsuario ? "Actualizar reseña" : "Enviar reseña" %>
-      </button>
+      <button class="btn-principal">Enviar reseña</button>
     </form>
   </section>
 <% } %>
 
 <section class="form-container">
-  <h3>Opiniones de otros usuarios</h3>
-
-  <% if (resenyas.length === 0) { %>
-    <p class="no-products">No hay reseñas todavía.</p>
-  <% } else { %>
-    <% resenyas.forEach(resena => { %>
-      <div class="producto-card">
-        <p><strong><%= resena.autor %></strong></p>
-        <p>Valoración: <%= resena.valoracion %> ⭐</p>
-        <p><%= resena.comentario %></p>
-        <small><%= new Date(resena.fecha_resenya).toISOString().split('T')[0] %></small>
-      </div>
-    <% }) %>
-  <% } %>
+  <% resenyas.forEach(r => { %>
+    <div class="producto-card">
+      <p><%= r.autor %></p>
+      <p><%= r.valoracion %> ⭐</p>
+      <p><%= r.comentario %></p>
+    </div>
+  <% }) %>
 </section>
 
 <%- include('partials/footer') %>
