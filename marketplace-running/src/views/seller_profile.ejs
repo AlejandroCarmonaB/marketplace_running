@@ -2,41 +2,153 @@
 
 <section class="page-title">
   <h2>Perfil de <%= vendedor.nickname %></h2>
+  <p>Consulta la reputación del vendedor y sus productos activos publicados.</p>
 </section>
 
-<section class="form-container">
-  <h3>Valoraciones</h3>
-  <p>Media: <strong><%= resumen.media_valoraciones %></strong> ⭐</p>
-</section>
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito" id="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-exito');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="mensaje-error" id="mensaje-error">
+    <p><%= mensajeError %></p>
+  </div>
+  <script>
+    setTimeout(() => {
+      const mensaje = document.getElementById('mensaje-error');
+      if (mensaje) {
+        mensaje.style.transition = 'opacity 0.5s ease';
+        mensaje.style.opacity = '0';
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% } %>
 
 <%
   const esUsuarioNormal = usuarioSesion && usuarioSesion.nombre_rol === 'usuario';
 %>
 
+<section class="form-container">
+  <h3>Resumen del vendedor</h3>
+
+  <div class="analytics-kpis">
+    <div class="analytics-kpi-card">
+      <h3>Vendedor</h3>
+      <p><%= vendedor.nickname %></p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Media</h3>
+      <p><%= Number(resumen.media_valoraciones).toFixed(2) %> ⭐</p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Reseñas</h3>
+      <p><%= resumen.total_resenyas %></p>
+    </div>
+
+    <div class="analytics-kpi-card">
+      <h3>Productos activos</h3>
+      <p><%= totalProductosActivos %></p>
+    </div>
+  </div>
+</section>
+
 <% if (esUsuarioNormal && usuarioSesion.id_usuario !== vendedor.id_usuario) { %>
   <section class="form-container">
-    <form method="POST" action="/vendedor/<%= vendedor.id_usuario %>/resena">
-      <select name="valoracion">
-        <% for (let i = 1; i <= 5; i++) { %>
-          <option value="<%= i %>"><%= i %> ⭐</option>
-        <% } %>
-      </select>
+    <h3><%= resenyaUsuario ? "Editar tu reseña" : "Dejar una reseña" %></h3>
 
-      <textarea name="comentario"></textarea>
+    <form method="POST" action="/vendedor/<%= vendedor.id_usuario %>/resena" class="formulario">
+      <div class="form-group">
+        <label for="valoracion">Valoración (1-5):</label>
+        <select name="valoracion" id="valoracion" required>
+          <% for (let i = 1; i <= 5; i++) { %>
+            <option value="<%= i %>" <%= resenyaUsuario && resenyaUsuario.valoracion == i ? "selected" : "" %>>
+              <%= i %> ⭐
+            </option>
+          <% } %>
+        </select>
+      </div>
 
-      <button class="btn-principal">Enviar reseña</button>
+      <div class="form-group">
+        <label for="comentario">Comentario:</label>
+        <textarea name="comentario" id="comentario" rows="4" required><%= resenyaUsuario ? resenyaUsuario.comentario : "" %></textarea>
+      </div>
+
+      <button type="submit" class="btn-principal">
+        <%= resenyaUsuario ? "Actualizar reseña" : "Enviar reseña" %>
+      </button>
     </form>
   </section>
 <% } %>
 
 <section class="form-container">
-  <% resenyas.forEach(r => { %>
-    <div class="producto-card">
-      <p><%= r.autor %></p>
-      <p><%= r.valoracion %> ⭐</p>
-      <p><%= r.comentario %></p>
+  <h3>Productos activos del vendedor</h3>
+
+  <% if (!productosActivos || productosActivos.length === 0) { %>
+    <p class="no-products">Este vendedor no tiene productos activos en este momento.</p>
+  <% } else { %>
+    <div class="productos-grid">
+      <% productosActivos.forEach(producto => { %>
+        <div class="producto-card">
+          <% if (producto.imagen_principal) { %>
+            <img 
+              src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
+              alt="Imagen de <%= producto.titulo %>"
+              class="producto-imagen"
+            >
+          <% } else { %>
+            <div class="producto-imagen-placeholder">Sin imagen</div>
+          <% } %>
+
+          <div class="producto-info">
+            <h3 class="producto-titulo">
+              <a href="/producto/<%= producto.id_prod %>"><%= producto.titulo %></a>
+            </h3>
+
+            <p class="producto-precio"><strong>Precio:</strong> <%= Number(producto.precio).toFixed(2) %> €</p>
+            <p class="producto-estado"><strong>Estado:</strong> <%= producto.estado_fisico %></p>
+          </div>
+        </div>
+      <% }) %>
     </div>
-  <% }) %>
+  <% } %>
+</section>
+
+<section class="form-container">
+  <h3>Opiniones de otros usuarios</h3>
+
+  <% if (resenyas.length === 0) { %>
+    <p class="no-products">No hay reseñas todavía.</p>
+  <% } else { %>
+    <% resenyas.forEach(resena => { %>
+      <div class="producto-card">
+        <div class="producto-info">
+          <p><strong><%= resena.autor %></strong></p>
+          <p>Valoración: <%= resena.valoracion %> ⭐</p>
+          <p><%= resena.comentario %></p>
+          <small><%= new Date(resena.fecha_resenya).toISOString().split('T')[0] %></small>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
 </section>
 
 <%- include('partials/footer') %>

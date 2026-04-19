@@ -15,6 +15,14 @@ class AuthMiddleware {
     next();
   }
 
+  static soloUsuario(req, res, next) {
+    if (!req.session.usuario || req.session.usuario.nombre_rol !== 'usuario') {
+      return res.status(403).send('Acceso denegado');
+    }
+
+    next();
+  }
+
   static soloAdmin(req, res, next) {
     if (!req.session.usuario || req.session.usuario.nombre_rol !== 'administrador') {
       return res.status(403).send('Acceso denegado');
@@ -23,9 +31,23 @@ class AuthMiddleware {
     next();
   }
 
-  static soloUsuario(req, res, next) {
-    if (!req.session.usuario || req.session.usuario.nombre_rol !== 'usuario') {
-      return res.status(403).send('Acceso denegado: solo los usuarios pueden realizar esta acción.');
+  static soloSuperAdmin(req, res, next) {
+    if (!req.session.usuario || req.session.usuario.nombre_rol !== 'superadministrador') {
+      return res.status(403).send('Acceso denegado');
+    }
+
+    next();
+  }
+
+  static soloAdminOSuperAdmin(req, res, next) {
+    if (!req.session.usuario) {
+      return res.status(403).send('Acceso denegado');
+    }
+
+    const rol = req.session.usuario.nombre_rol;
+
+    if (rol !== 'administrador' && rol !== 'superadministrador') {
+      return res.status(403).send('Acceso denegado');
     }
 
     next();
@@ -38,7 +60,11 @@ class AuthMiddleware {
 
     const rol = req.session.usuario.nombre_rol;
 
-    if (rol !== 'administrador' && rol !== 'verificador') {
+    if (
+      rol !== 'administrador' &&
+      rol !== 'verificador' &&
+      rol !== 'superadministrador'
+    ) {
       return res.status(403).send('Acceso denegado');
     }
 
@@ -52,7 +78,11 @@ class AuthMiddleware {
 
     const rol = req.session.usuario.nombre_rol;
 
-    if (rol !== 'administrador' && rol !== 'analista') {
+    if (
+      rol !== 'administrador' &&
+      rol !== 'analista' &&
+      rol !== 'superadministrador'
+    ) {
       return res.status(403).send('Acceso denegado');
     }
 

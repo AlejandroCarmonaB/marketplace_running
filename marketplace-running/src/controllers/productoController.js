@@ -45,6 +45,7 @@ class ProductoController {
         return res.status(404).send('Producto no encontrado');
       }
 
+      const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
       const resenyas = await ResenyaProductoService.obtenerResenyasDeProducto(idProducto);
       const resumen = await ResenyaProductoService.obtenerResumenValoracionesProducto(idProducto);
 
@@ -63,6 +64,7 @@ class ProductoController {
 
       res.render('product_detail', {
         producto,
+        imagenes,
         resenyas,
         resumen,
         resenyaUsuario,

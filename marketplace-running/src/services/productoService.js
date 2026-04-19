@@ -25,6 +25,7 @@ class ProductoService {
       JOIN categoria c ON p.id_categoria = c.id_categoria
       JOIN usuario u ON p.id_vendedor = u.id_usuario
       WHERE p.estado_publicacion = 'activo'
+        AND COALESCE(p.borrado_logico, false) = false
       ORDER BY p.id_prod ASC
     `;
 
@@ -56,6 +57,7 @@ class ProductoService {
       JOIN categoria c ON p.id_categoria = c.id_categoria
       JOIN usuario u ON p.id_vendedor = u.id_usuario
       WHERE p.estado_publicacion = 'activo'
+        AND COALESCE(p.borrado_logico, false) = false
     `;
 
     const values = [];
@@ -114,10 +116,23 @@ class ProductoService {
       JOIN categoria c ON p.id_categoria = c.id_categoria
       JOIN usuario u ON p.id_vendedor = u.id_usuario
       WHERE p.id_prod = $1
+        AND COALESCE(p.borrado_logico, false) = false
     `;
 
     const result = await pool.query(query, [idProducto]);
     return result.rows[0] || null;
+  }
+
+  static async obtenerImagenesProducto(idProducto) {
+    const query = `
+      SELECT id_imagen, url_imagen
+      FROM imagen_producto
+      WHERE id_prod = $1
+      ORDER BY id_imagen ASC
+    `;
+
+    const result = await pool.query(query, [idProducto]);
+    return result.rows;
   }
 
   static async obtenerCategorias() {
@@ -186,6 +201,8 @@ class ProductoService {
         p.stock,
         p.estado_fisico,
         p.estado_publicacion,
+        p.borrado_logico,
+        p.fecha_baja_programada,
         c.nombre_categoria,
         (
           SELECT ip.url_imagen
@@ -197,6 +214,7 @@ class ProductoService {
       FROM producto p
       JOIN categoria c ON p.id_categoria = c.id_categoria
       WHERE p.id_vendedor = $1
+        AND COALESCE(p.borrado_logico, false) = false
       ORDER BY p.id_prod DESC
     `;
 
@@ -211,6 +229,7 @@ class ProductoService {
       WHERE id_prod = $1
         AND id_vendedor = $2
         AND estado_publicacion <> 'vendido'
+        AND COALESCE(borrado_logico, false) = false
     `;
 
     const result = await pool.query(query, [idProducto, idVendedor]);
@@ -228,6 +247,7 @@ class ProductoService {
       WHERE id_prod = $6
         AND id_vendedor = $7
         AND estado_publicacion <> 'vendido'
+        AND COALESCE(borrado_logico, false) = false
       RETURNING id_prod
     `;
 
@@ -252,6 +272,7 @@ class ProductoService {
       WHERE id_prod = $1
         AND id_vendedor = $2
         AND estado_publicacion <> 'vendido'
+        AND COALESCE(borrado_logico, false) = false
       RETURNING id_prod
     `;
 
@@ -270,6 +291,8 @@ class ProductoService {
         p.stock,
         p.estado_fisico,
         p.estado_publicacion,
+        p.borrado_logico,
+        p.fecha_baja_programada,
         c.nombre_categoria,
         u.nickname AS vendedor,
         (
@@ -282,7 +305,7 @@ class ProductoService {
       FROM producto p
       JOIN categoria c ON p.id_categoria = c.id_categoria
       JOIN usuario u ON p.id_vendedor = u.id_usuario
-      WHERE 1 = 1
+      WHERE COALESCE(p.borrado_logico, false) = false
     `;
 
     const values = [];
@@ -317,11 +340,99 @@ class ProductoService {
       SET estado_publicacion = $1
       WHERE id_prod = $2
         AND estado_publicacion <> 'vendido'
+        AND COALESCE(borrado_logico, false) = false
       RETURNING id_prod, estado_publicacion
     `;
 
     const result = await pool.query(query, [nuevoEstado, idProducto]);
     return result.rows[0] || null;
+  }
+
+  static async programarBajaLogicaProducto({
+    idProducto,
+    idActor,
+    motivo,
+    diasGracia = 7
+  }) {
+    const query = `
+      UPDATE producto
+      SET
+        borrado_logico = true,
+        estado_publicacion = 'inactivo',
+        fecha_baja_programada = NOW() + ($1 || ' days')::interval,
+        motivo_baja = $2,
+        eliminado_por = $3
+      WHERE id_prod = $4
+        AND COALESCE(borrado_logico, false) = false
+      RETURNING id_prod, fecha_baja_programada
+    `;
+
+    const values = [String(diasGracia), motivo || null, idActor, idProducto];
+    const result = await pool.query(query, values);
+    return result.rows[0] || null;
+  }
+
+  static async restaurarProducto(idProducto) {
+    const query = `
+      UPDATE producto
+      SET
+        borrado_logico = false,
+        fecha_baja_programada = NULL,
+        motivo_baja = NULL,
+        eliminado_por = NULL,
+        fecha_restauracion = NOW(),
+        estado_publicacion = CASE
+          WHEN estado_publicacion = 'inactivo' THEN 'activo'
+          ELSE estado_publicacion
+        END
+      WHERE id_prod = $1
+        AND COALESCE(borrado_logico, false) = true
+      RETURNING id_prod
+    `;
+
+    const result = await pool.query(query, [idProducto]);
+    return result.rows[0] || null;
+  }
+
+  static async obtenerProductosPendientesBaja() {
+    const query = `
+      SELECT
+        p.id_prod,
+        p.titulo,
+        p.precio,
+        p.estado_fisico,
+        p.estado_publicacion,
+        p.fecha_baja_programada,
+        p.motivo_baja,
+        u.nickname AS vendedor,
+        (
+          SELECT ip.url_imagen
+          FROM imagen_producto ip
+          WHERE ip.id_prod = p.id_prod
+          ORDER BY ip.id_imagen ASC
+          LIMIT 1
+        ) AS imagen_principal
+      FROM producto p
+      JOIN usuario u ON p.id_vendedor = u.id_usuario
+      WHERE COALESCE(p.borrado_logico, false) = true
+      ORDER BY p.fecha_baja_programada ASC NULLS LAST
+    `;
+
+    const result = await pool.query(query);
+    return result.rows;
+  }
+
+  static async purgarProductosCaducados() {
+    const query = `
+      DELETE FROM producto
+      WHERE COALESCE(borrado_logico, false) = true
+        AND fecha_baja_programada IS NOT NULL
+        AND fecha_baja_programada <= NOW()
+      RETURNING id_prod, titulo
+    `;
+
+    const result = await pool.query(query);
+    return result.rows;
   }
 
   static async procesarCompra({ idComprador, carrito }) {

@@ -33,6 +33,9 @@ class CarritoController {
 
       req.session.carrito.push(producto);
 
+      // 👇 NUEVO (toast global)
+      req.session.mensajeToast = "Producto añadido al carrito correctamente";
+
       return res.redirect('/carrito');
     } catch (error) {
       console.error('Error al añadir al carrito:', error);

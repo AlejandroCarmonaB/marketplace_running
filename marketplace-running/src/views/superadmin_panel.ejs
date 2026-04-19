@@ -1,0 +1,325 @@
+<%- include('partials/header') %>
+
+<section class="page-title">
+  <h2>Panel de superadministración</h2>
+  <p>Gestión avanzada de roles, estados, restauración de bajas lógicas y auditoría del sistema.</p>
+</section>
+
+<% if (mensajeExito) { %>
+  <div class="mensaje-exito">
+    <p><%= mensajeExito %></p>
+  </div>
+<% } %>
+
+<% if (mensajeError) { %>
+  <div class="mensaje-error">
+    <p><%= mensajeError %></p>
+  </div>
+<% } %>
+
+<section class="form-container">
+  <h3>Gestión de usuarios, roles y estados</h3>
+
+  <% if (!usuariosGestionables || usuariosGestionables.length === 0) { %>
+    <p class="no-products">No hay usuarios disponibles para gestionar.</p>
+  <% } else { %>
+    <div class="superadmin-user-grid">
+      <% usuariosGestionables.forEach(usuario => { %>
+        <article class="superadmin-user-card js-superadmin-user-card" data-usuario-id="<%= usuario.id_usuario %>">
+          <div class="superadmin-user-meta">
+            <h4><%= usuario.nickname %></h4>
+            <p><strong>Email:</strong> <%= usuario.email %></p>
+            <p><strong>Rol actual:</strong> <span class="js-rol-actual"><%= usuario.nombre_rol %></span></p>
+            <p><strong>Estado:</strong> <span class="js-estado-cuenta"><%= usuario.estado_cuenta %></span></p>
+          </div>
+
+          <% if (usuarioSesion && usuarioSesion.id_usuario !== usuario.id_usuario) { %>
+            <div class="superadmin-user-actions">
+              <form action="/superadmin/usuarios/<%= usuario.id_usuario %>/rol" method="POST" class="superadmin-role-form js-form-rol-superadmin">
+                <label for="rol-<%= usuario.id_usuario %>">Cambiar rol</label>
+                <select name="id_rol" id="rol-<%= usuario.id_usuario %>" required>
+                  <% roles.forEach(rol => { %>
+                    <option 
+                      value="<%= rol.id_rol %>" 
+                      <%= String(rol.nombre_rol) === String(usuario.nombre_rol) ? 'selected' : '' %>
+                    >
+                      <%= rol.nombre_rol %>
+                    </option>
+                  <% }) %>
+                </select>
+                <button type="submit" class="btn-principal">Actualizar rol</button>
+              </form>
+
+              <div class="superadmin-state-action">
+                <label>Estado de cuenta</label>
+
+                <% if (usuario.estado_cuenta === 'activa') { %>
+                  <form action="/superadmin/usuarios/<%= usuario.id_usuario %>/estado" method="POST" class="js-form-estado-superadmin">
+                    <input type="hidden" name="nuevoEstado" value="bloqueada">
+                    <button type="submit" class="btn-peligro js-boton-estado">
+                      Bloquear
+                    </button>
+                  </form>
+                <% } else { %>
+                  <form action="/superadmin/usuarios/<%= usuario.id_usuario %>/estado" method="POST" class="js-form-estado-superadmin">
+                    <input type="hidden" name="nuevoEstado" value="activa">
+                    <button type="submit" class="btn-secundario js-boton-estado">
+                      Reactivar
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="superadmin-user-actions">
+              <div class="superadmin-static-badges">
+                <span class="superadmin-badge-info">Tu propia cuenta</span>
+                <span class="superadmin-badge-info">No disponible</span>
+              </div>
+            </div>
+          <% } %>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<section class="form-container">
+  <h3>Usuarios pendientes de purga</h3>
+
+  <% if (!usuariosPendientes || usuariosPendientes.length === 0) { %>
+    <p class="no-products">No hay usuarios pendientes de purga.</p>
+  <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nickname</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Fecha baja programada</th>
+            <th>Motivo</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-usuarios-pendientes">
+          <% usuariosPendientes.forEach(usuario => { %>
+            <tr data-usuario-id="<%= usuario.id_usuario %>">
+              <td><%= usuario.nickname %></td>
+              <td><%= usuario.email %></td>
+              <td><%= usuario.nombre_rol %></td>
+              <td><%= usuario.estado_cuenta %></td>
+              <td><%= usuario.fecha_baja_programada ? new Date(usuario.fecha_baja_programada).toLocaleString('es-ES') : '-' %></td>
+              <td><%= usuario.motivo_baja || '-' %></td>
+              <td>
+                <form action="/superadmin/usuarios/<%= usuario.id_usuario %>/restaurar" method="POST" class="js-form-restaurar-usuario">
+                  <button type="submit" class="btn-principal">Restaurar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<section class="form-container">
+  <h3>Productos pendientes de purga</h3>
+
+  <% if (!productosPendientes || productosPendientes.length === 0) { %>
+    <p class="no-products">No hay productos pendientes de purga.</p>
+  <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Vendedor</th>
+            <th>Fecha baja programada</th>
+            <th>Motivo</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-productos-pendientes">
+          <% productosPendientes.forEach(producto => { %>
+            <tr data-producto-id="<%= producto.id_prod %>">
+              <td><%= producto.titulo %></td>
+              <td><%= producto.vendedor %></td>
+              <td><%= producto.fecha_baja_programada ? new Date(producto.fecha_baja_programada).toLocaleString('es-ES') : '-' %></td>
+              <td><%= producto.motivo_baja || '-' %></td>
+              <td>
+                <form action="/superadmin/productos/<%= producto.id_prod %>/restaurar" method="POST" class="js-form-restaurar-producto">
+                  <button type="submit" class="btn-principal">Restaurar</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<section class="form-container">
+  <h3>Log de auditoría reciente</h3>
+
+  <% if (!logs || logs.length === 0) { %>
+    <p class="no-products">No hay registros de auditoría todavía.</p>
+  <% } else { %>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Actor</th>
+            <th>Acción</th>
+            <th>Entidad</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(log => { %>
+            <tr>
+              <td><%= new Date(log.fecha_accion).toLocaleString('es-ES') %></td>
+              <td><%= log.actor || 'Sistema' %></td>
+              <td><%= log.accion %></td>
+              <td><%= log.entidad %></td>
+              <td><%= log.detalle || '-' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<script>
+  function mostrarToastDinamico(mensaje, tipo = 'exito') {
+    const toast = document.createElement('div');
+    toast.className = tipo === 'error' ? 'toast-error' : 'toast-exito';
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
+  async function enviarFormularioAjax(form) {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams(new FormData(form))
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.mensaje || 'Ha ocurrido un error.');
+    }
+
+    return data;
+  }
+
+  document.querySelectorAll('.js-form-restaurar-usuario').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const fila = form.closest('tr');
+
+        if (data.accion === 'eliminar_fila' && fila) {
+          fila.remove();
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Usuario restaurado correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-form-restaurar-producto').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const fila = form.closest('tr');
+
+        if (data.accion === 'eliminar_fila' && fila) {
+          fila.remove();
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Producto restaurado correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-form-estado-superadmin').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const card = form.closest('.js-superadmin-user-card');
+        const estadoEl = card.querySelector('.js-estado-cuenta');
+        const boton = form.querySelector('.js-boton-estado');
+        const inputEstado = form.querySelector('input[name="nuevoEstado"]');
+
+        if (estadoEl) {
+          estadoEl.textContent = data.nuevoEstado;
+        }
+
+        if (data.nuevoEstado === 'bloqueada') {
+          boton.textContent = 'Reactivar';
+          boton.classList.remove('btn-peligro');
+          boton.classList.add('btn-secundario');
+          inputEstado.value = 'activa';
+        } else {
+          boton.textContent = 'Bloquear';
+          boton.classList.remove('btn-secundario');
+          boton.classList.add('btn-peligro');
+          inputEstado.value = 'bloqueada';
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Estado actualizado correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-form-rol-superadmin').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const card = form.closest('.js-superadmin-user-card');
+        const rolActual = card.querySelector('.js-rol-actual');
+        const select = form.querySelector('select');
+
+        if (rolActual && select) {
+          rolActual.textContent = select.options[select.selectedIndex].text;
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Rol actualizado correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

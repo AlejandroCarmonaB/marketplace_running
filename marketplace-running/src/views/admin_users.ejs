@@ -2,56 +2,22 @@
 
 <section class="page-title">
   <h2>Gestión de usuarios</h2>
-  <p>Consulta, filtra y actualiza el estado de las cuentas registradas en la plataforma.</p>
+  <p>Consulta, filtra, bloquea y programa bajas lógicas de cuentas.</p>
 </section>
 
 <% if (mensajeExito) { %>
-  <div class="mensaje-exito" id="mensaje-exito">
-    <p><%= mensajeExito %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-exito');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
+  <div class="mensaje-exito"><p><%= mensajeExito %></p></div>
 <% } %>
 
 <% if (mensajeError) { %>
-  <div class="mensaje-error" id="mensaje-error">
-    <p><%= mensajeError %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-error');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
+  <div class="mensaje-error"><p><%= mensajeError %></p></div>
 <% } %>
 
 <section class="form-container">
   <form method="GET" action="/admin/usuarios" class="formulario">
     <div class="form-group">
       <label for="q">Buscar por email o nickname</label>
-      <input
-        type="text"
-        id="q"
-        name="q"
-        value="<%= termino %>"
-        placeholder="Introduce email o nickname"
-      >
+      <input type="text" id="q" name="q" value="<%= termino %>" placeholder="Introduce email o nickname">
     </div>
 
     <div class="form-group">
@@ -70,45 +36,54 @@
 <% if (usuarios.length === 0) { %>
   <p class="no-products">No se han encontrado usuarios con esos criterios.</p>
 <% } else { %>
-  <div class="productos-grid">
+  <div class="productos-grid" id="lista-usuarios-admin">
     <% usuarios.forEach(usuario => { %>
-      <div class="producto-card">
+      <div class="producto-card js-usuario-card" data-usuario-id="<%= usuario.id_usuario %>">
         <div class="producto-info">
           <h3 class="producto-titulo"><%= usuario.nickname %></h3>
 
           <p><strong>Nombre:</strong> <%= usuario.nombre %> <%= usuario.apellidos %></p>
           <p><strong>Email:</strong> <%= usuario.email %></p>
           <p><strong>Rol:</strong> <%= usuario.nombre_rol %></p>
-          <p><strong>Estado:</strong> <%= usuario.estado_cuenta %></p>
+          <p>
+            <strong>Estado:</strong>
+            <span class="js-estado-cuenta"><%= usuario.estado_cuenta %></span>
+          </p>
 
           <% if (
             usuarioSesion.id_usuario !== usuario.id_usuario &&
-            usuario.nombre_rol !== 'administrador'
+            usuario.nombre_rol !== 'administrador' &&
+            usuario.nombre_rol !== 'superadministrador'
           ) { %>
             <div class="producto-acciones">
               <% if (usuario.estado_cuenta === 'activa') { %>
-                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST">
+                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST" class="js-form-estado-admin">
                   <input type="hidden" name="nuevoEstado" value="bloqueada">
-                  <button
-                    type="submit"
-                    class="btn-principal"
-                    onclick="return confirm('¿Seguro que quieres bloquear esta cuenta?');"
-                  >
+                  <button type="submit" class="btn-principal js-boton-estado">
                     Bloquear
                   </button>
                 </form>
               <% } else { %>
-                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST">
+                <form action="/admin/usuarios/<%= usuario.id_usuario %>/estado" method="POST" class="js-form-estado-admin">
                   <input type="hidden" name="nuevoEstado" value="activa">
-                  <button
-                    type="submit"
-                    class="btn-principal"
-                    onclick="return confirm('¿Seguro que quieres reactivar esta cuenta?');"
-                  >
+                  <button type="submit" class="btn-secundario js-boton-estado">
                     Reactivar
                   </button>
                 </form>
               <% } %>
+
+              <form action="/admin/usuarios/<%= usuario.id_usuario %>/programar-baja" method="POST" class="js-form-baja-admin">
+                <input type="hidden" name="motivo" value="Baja administrativa desde panel admin">
+                <button type="submit" class="btn-peligro">
+                  Programar baja
+                </button>
+              </form>
+            </div>
+          <% } else { %>
+            <div class="producto-acciones producto-acciones-centro">
+              <span class="superadmin-badge-info">
+                <%= usuarioSesion.id_usuario === usuario.id_usuario ? 'Tu propia cuenta' : 'No disponible' %>
+              </span>
             </div>
           <% } %>
         </div>
@@ -116,5 +91,96 @@
     <% }) %>
   </div>
 <% } %>
+
+<script>
+  function mostrarToastDinamico(mensaje, tipo = 'exito') {
+    const toast = document.createElement('div');
+    toast.className = tipo === 'error' ? 'toast-error' : 'toast-exito';
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
+  async function enviarFormularioAjax(form) {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams(new FormData(form))
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.mensaje || 'Ha ocurrido un error.');
+    }
+
+    return data;
+  }
+
+  document.querySelectorAll('.js-form-baja-admin').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!confirm('¿Seguro que quieres programar la baja de este usuario?')) {
+        return;
+      }
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const card = form.closest('.js-usuario-card');
+
+        if (data.accion === 'eliminar_tarjeta' && card) {
+          card.remove();
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Acción completada correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-form-estado-admin').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const data = await enviarFormularioAjax(form);
+        const card = form.closest('.js-usuario-card');
+        const estadoEl = card.querySelector('.js-estado-cuenta');
+        const boton = form.querySelector('.js-boton-estado');
+        const inputEstado = form.querySelector('input[name="nuevoEstado"]');
+
+        if (estadoEl) {
+          estadoEl.textContent = data.nuevoEstado;
+        }
+
+        if (data.nuevoEstado === 'bloqueada') {
+          boton.textContent = 'Reactivar';
+          boton.classList.remove('btn-principal');
+          boton.classList.add('btn-secundario');
+          inputEstado.value = 'activa';
+        } else {
+          boton.textContent = 'Bloquear';
+          boton.classList.remove('btn-secundario');
+          boton.classList.add('btn-principal');
+          inputEstado.value = 'bloqueada';
+        }
+
+        mostrarToastDinamico(data.mensaje || 'Estado actualizado correctamente.');
+      } catch (error) {
+        mostrarToastDinamico(error.message, 'error');
+      }
+    });
+  });
+</script>
 
 <%- include('partials/footer') %>

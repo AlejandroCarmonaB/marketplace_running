@@ -12,61 +12,39 @@ const AdminController = require('../controllers/adminController');
 const AnaliticaController = require('../controllers/analiticaController');
 const ResenyaProductoController = require('../controllers/resenyaProductoController');
 const ResenyaUsuarioController = require('../controllers/resenyaUsuarioController');
+const SuperadminController = require('../controllers/superadminController');
 
 // Middlewares
 const AuthMiddleware = require('../middlewares/authMiddleware');
 const upload = require('../config/multer');
 
-
 // =========================
 // RUTAS PÚBLICAS
 // =========================
 
-// Página principal (catálogo)
 router.get('/', ProductoController.mostrarProductos);
-
-// Detalle de producto
 router.get('/producto/:id', ProductoController.mostrarDetalleProducto);
-
-// Perfil de vendedor
 router.get('/vendedor/:id', ResenyaUsuarioController.verPerfilVendedor);
-
 
 // =========================
 // AUTENTICACIÓN
 // =========================
 
-// Login
-router.get(
-  '/login',
-  AuthMiddleware.redirigirSiAutenticado,
-  AuthController.mostrarFormularioLogin
-);
-
+router.get('/login', AuthMiddleware.redirigirSiAutenticado, AuthController.mostrarFormularioLogin);
 router.post('/login', AuthController.iniciarSesion);
-
-// Logout
 router.get('/logout', AuthController.cerrarSesion);
-
 
 // =========================
 // REGISTRO
 // =========================
 
-router.get(
-  '/register',
-  AuthMiddleware.redirigirSiAutenticado,
-  UsuarioController.mostrarFormularioRegistro
-);
-
+router.get('/register', AuthMiddleware.redirigirSiAutenticado, UsuarioController.mostrarFormularioRegistro);
 router.post('/register', UsuarioController.registrarUsuario);
-
 
 // =========================
 // PRODUCTOS (SOLO USUARIO)
 // =========================
 
-// Formulario publicar producto
 router.get(
   '/publicar-producto',
   AuthMiddleware.asegurarAutenticacion,
@@ -74,7 +52,6 @@ router.get(
   ProductoController.mostrarFormularioPublicar
 );
 
-// Guardar producto
 router.post(
   '/publicar-producto',
   AuthMiddleware.asegurarAutenticacion,
@@ -83,7 +60,6 @@ router.post(
   ProductoController.publicarProducto
 );
 
-// Mis productos
 router.get(
   '/mis-productos',
   AuthMiddleware.asegurarAutenticacion,
@@ -91,7 +67,6 @@ router.get(
   ProductoController.mostrarMisProductos
 );
 
-// Formulario editar producto
 router.get(
   '/editar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
@@ -99,7 +74,6 @@ router.get(
   ProductoController.mostrarFormularioEditar
 );
 
-// Guardar edición
 router.post(
   '/editar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
@@ -108,7 +82,6 @@ router.post(
   ProductoController.editarProducto
 );
 
-// Eliminación lógica
 router.post(
   '/eliminar-producto/:id',
   AuthMiddleware.asegurarAutenticacion,
@@ -116,12 +89,10 @@ router.post(
   ProductoController.eliminarProducto
 );
 
-
 // =========================
 // CARRITO (SOLO USUARIO)
 // =========================
 
-// Añadir al carrito
 router.post(
   '/carrito/agregar/:id',
   AuthMiddleware.asegurarAutenticacion,
@@ -129,7 +100,6 @@ router.post(
   CarritoController.agregarAlCarrito
 );
 
-// Ver carrito
 router.get(
   '/carrito',
   AuthMiddleware.asegurarAutenticacion,
@@ -137,7 +107,6 @@ router.get(
   CarritoController.verCarrito
 );
 
-// Eliminar del carrito
 router.post(
   '/carrito/eliminar/:id',
   AuthMiddleware.asegurarAutenticacion,
@@ -145,7 +114,6 @@ router.post(
   CarritoController.eliminarDelCarrito
 );
 
-// Comprar
 router.post(
   '/carrito/comprar',
   AuthMiddleware.asegurarAutenticacion,
@@ -153,12 +121,10 @@ router.post(
   CarritoController.comprar
 );
 
-
 // =========================
-// PEDIDOS (SOLO USUARIO)
+// PEDIDOS
 // =========================
 
-// Mis pedidos
 router.get(
   '/mis-pedidos',
   AuthMiddleware.asegurarAutenticacion,
@@ -166,12 +132,10 @@ router.get(
   TransaccionController.mostrarMisPedidos
 );
 
-
 // =========================
-// RESEÑAS (SOLO USUARIO)
+// RESEÑAS
 // =========================
 
-// Reseña de producto
 router.post(
   '/producto/:id/resena',
   AuthMiddleware.asegurarAutenticacion,
@@ -179,7 +143,6 @@ router.post(
   ResenyaProductoController.guardarResenya
 );
 
-// Reseña de vendedor
 router.post(
   '/vendedor/:id/resena',
   AuthMiddleware.asegurarAutenticacion,
@@ -187,12 +150,10 @@ router.post(
   ResenyaUsuarioController.guardarResenya
 );
 
-
 // =========================
-// VERIFICACIONES (ADMIN / VERIFICADOR)
+// VERIFICACIONES (ADMIN / VERIFICADOR / SUPERADMIN)
 // =========================
 
-// Ver transacciones pendientes
 router.get(
   '/verificaciones',
   AuthMiddleware.asegurarAutenticacion,
@@ -200,14 +161,12 @@ router.get(
   VerificacionController.mostrarPendientes
 );
 
-// Procesar verificación
 router.post(
   '/verificaciones/:id',
   AuthMiddleware.asegurarAutenticacion,
   AuthMiddleware.soloAdminOVerificador,
   VerificacionController.procesarVerificacion
 );
-
 
 // =========================
 // ADMINISTRACIÓN DE USUARIOS
@@ -216,17 +175,23 @@ router.post(
 router.get(
   '/admin/usuarios',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOSuperAdmin,
   AdminController.mostrarUsuarios
 );
 
 router.post(
   '/admin/usuarios/:id/estado',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOSuperAdmin,
   AdminController.cambiarEstadoCuenta
 );
 
+router.post(
+  '/admin/usuarios/:id/programar-baja',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdminOSuperAdmin,
+  AdminController.programarBajaUsuario
+);
 
 // =========================
 // ADMINISTRACIÓN DE PRODUCTOS
@@ -235,17 +200,23 @@ router.post(
 router.get(
   '/admin/productos',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOSuperAdmin,
   AdminController.mostrarProductos
 );
 
 router.post(
   '/admin/productos/:id/estado',
   AuthMiddleware.asegurarAutenticacion,
-  AuthMiddleware.soloAdmin,
+  AuthMiddleware.soloAdminOSuperAdmin,
   AdminController.cambiarEstadoProducto
 );
 
+router.post(
+  '/admin/productos/:id/programar-baja',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloAdminOSuperAdmin,
+  AdminController.programarBajaProducto
+);
 
 // =========================
 // ANALÍTICA
@@ -256,6 +227,45 @@ router.get(
   AuthMiddleware.asegurarAutenticacion,
   AuthMiddleware.soloAdminOAnalista,
   AnaliticaController.mostrarDashboard
+);
+
+// =========================
+// SUPERADMIN
+// =========================
+
+router.get(
+  '/superadmin',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloSuperAdmin,
+  SuperadminController.mostrarPanel
+);
+
+router.post(
+  '/superadmin/usuarios/:id/rol',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloSuperAdmin,
+  SuperadminController.cambiarRolUsuario
+);
+
+router.post(
+  '/superadmin/usuarios/:id/estado',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloSuperAdmin,
+  SuperadminController.cambiarEstadoCuenta
+);
+
+router.post(
+  '/superadmin/usuarios/:id/restaurar',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloSuperAdmin,
+  SuperadminController.restaurarUsuario
+);
+
+router.post(
+  '/superadmin/productos/:id/restaurar',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloSuperAdmin,
+  SuperadminController.restaurarProducto
 );
 
 module.exports = router;

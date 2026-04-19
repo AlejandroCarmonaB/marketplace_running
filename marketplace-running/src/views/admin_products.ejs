@@ -2,56 +2,22 @@
 
 <section class="page-title">
   <h2>Gestión de productos</h2>
-  <p>Consulta, filtra y modera las publicaciones de productos del marketplace.</p>
+  <p>Consulta, filtra, cambia estados y programa bajas lógicas de productos.</p>
 </section>
 
 <% if (mensajeExito) { %>
-  <div class="mensaje-exito" id="mensaje-exito">
-    <p><%= mensajeExito %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-exito');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
+  <div class="mensaje-exito"><p><%= mensajeExito %></p></div>
 <% } %>
 
 <% if (mensajeError) { %>
-  <div class="mensaje-error" id="mensaje-error">
-    <p><%= mensajeError %></p>
-  </div>
-  <script>
-    setTimeout(() => {
-      const mensaje = document.getElementById('mensaje-error');
-      if (mensaje) {
-        mensaje.style.transition = 'opacity 0.5s ease';
-        mensaje.style.opacity = '0';
-        setTimeout(() => {
-          mensaje.style.display = 'none';
-        }, 500);
-      }
-    }, 3000);
-  </script>
+  <div class="mensaje-error"><p><%= mensajeError %></p></div>
 <% } %>
 
 <section class="form-container">
   <form method="GET" action="/admin/productos" class="formulario">
     <div class="form-group">
       <label for="q">Buscar por título o vendedor</label>
-      <input
-        type="text"
-        id="q"
-        name="q"
-        value="<%= termino %>"
-        placeholder="Introduce título o nickname"
-      >
+      <input type="text" id="q" name="q" value="<%= termino %>" placeholder="Introduce título o nickname">
     </div>
 
     <div class="form-group">
@@ -75,67 +41,47 @@
   <div class="productos-grid">
     <% productos.forEach(producto => { %>
       <div class="producto-card">
-
         <% if (producto.imagen_principal) { %>
           <img 
             src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
-            alt="Imagen de <%= producto.titulo %>"
+            alt="Imagen del producto"
             class="producto-imagen"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
           >
-          <div class="producto-imagen-placeholder" style="display: none;">
-            Sin imagen
-          </div>
         <% } else { %>
-          <div class="producto-imagen-placeholder">
-            Sin imagen
-          </div>
+          <div class="producto-imagen-placeholder">Sin imagen</div>
         <% } %>
 
         <div class="producto-info">
-          <h3 class="producto-titulo">
-            <a href="/producto/<%= producto.id_prod %>">
-              <%= producto.titulo %>
-            </a>
-          </h3>
-
+          <h3 class="producto-titulo"><%= producto.titulo %></h3>
           <p><strong>Vendedor:</strong> <%= producto.vendedor %></p>
-          <p><strong>Categoría:</strong> <%= producto.nombre_categoria %></p>
           <p><strong>Precio:</strong> <%= Number(producto.precio).toFixed(2) %> €</p>
-          <p><strong>Estado físico:</strong> <%= producto.estado_fisico %></p>
           <p><strong>Estado publicación:</strong> <%= producto.estado_publicacion %></p>
+          <p><strong>Estado físico:</strong> <%= producto.estado_fisico %></p>
 
-          <% if (producto.estado_publicacion !== 'vendido') { %>
-            <div class="producto-acciones">
-              <% if (producto.estado_publicacion === 'activo') { %>
-                <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
-                  <input type="hidden" name="nuevoEstado" value="inactivo">
-                  <button
-                    type="submit"
-                    class="btn-principal"
-                    onclick="return confirm('¿Seguro que quieres desactivar este producto?');"
-                  >
-                    Desactivar
-                  </button>
-                </form>
-              <% } else { %>
-                <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
-                  <input type="hidden" name="nuevoEstado" value="activo">
-                  <button
-                    type="submit"
-                    class="btn-principal"
-                    onclick="return confirm('¿Seguro que quieres reactivar este producto?');"
-                  >
-                    Reactivar
-                  </button>
-                </form>
-              <% } %>
-            </div>
-          <% } else { %>
-            <p><strong>Acción:</strong> No disponible sobre productos vendidos</p>
-          <% } %>
+          <div class="producto-acciones">
+            <% if (producto.estado_publicacion !== 'vendido') { %>
+              <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
+                <input type="hidden" name="nuevoEstado" value="rechazado">
+                <button type="submit" class="btn-secundario">Rechazar</button>
+              </form>
+
+              <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
+                <input type="hidden" name="nuevoEstado" value="inactivo">
+                <button type="submit" class="btn-secundario">Inactivar</button>
+              </form>
+
+              <form action="/admin/productos/<%= producto.id_prod %>/estado" method="POST">
+                <input type="hidden" name="nuevoEstado" value="activo">
+                <button type="submit" class="btn-principal">Activar</button>
+              </form>
+            <% } %>
+
+            <form action="/admin/productos/<%= producto.id_prod %>/programar-baja" method="POST">
+              <input type="hidden" name="motivo" value="Baja administrativa desde panel admin">
+              <button type="submit" class="btn-peligro">Programar baja</button>
+            </form>
+          </div>
         </div>
-
       </div>
     <% }) %>
   </div>

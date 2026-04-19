@@ -25,7 +25,12 @@
         <% if (usuarioSesion) { %>
 
           <% if (usuarioSesion.nombre_rol === 'usuario') { %>
-            <a href="/carrito" class="nav-link">Carrito</a>
+            <a href="/carrito" class="nav-link nav-carrito">
+              Carrito
+              <% if (carritoCount > 0) { %>
+                <span class="carrito-badge"><%= carritoCount %></span>
+              <% } %>
+            </a>
             <a href="/mis-pedidos" class="nav-link">Mis pedidos</a>
             <a href="/mis-productos" class="nav-link">Mis productos</a>
             <a href="/publicar-producto" class="nav-link nav-link-accent">Publicar producto</a>
@@ -41,6 +46,13 @@
 
           <% } else if (usuarioSesion.nombre_rol === 'analista') { %>
             <a href="/analitica" class="nav-link nav-link-accent">Analítica</a>
+
+          <% } else if (usuarioSesion.nombre_rol === 'superadministrador') { %>
+            <a href="/verificaciones" class="nav-link">Verificaciones</a>
+            <a href="/admin/usuarios" class="nav-link">Usuarios</a>
+            <a href="/admin/productos" class="nav-link">Productos</a>
+            <a href="/analitica" class="nav-link">Analítica</a>
+            <a href="/superadmin" class="nav-link nav-link-accent">Superadmin</a>
           <% } %>
 
         <% } else { %>
@@ -60,5 +72,21 @@
       <% } %>
     </div>
   </header>
+
+  <% if (mensajeToast) { %>
+    <div class="toast-exito" id="toastExito">
+      <%= mensajeToast %>
+    </div>
+
+    <script>
+      setTimeout(() => {
+        const toast = document.getElementById("toastExito");
+        if (toast) {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(-10px)";
+        }
+      }, 3000);
+    </script>
+  <% } %>
 
   <main class="site-main">

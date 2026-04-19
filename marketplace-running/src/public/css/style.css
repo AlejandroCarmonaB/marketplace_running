@@ -310,6 +310,35 @@ input[type="submit"]:active {
   transform: translateY(0);
 }
 
+.btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+}
+
+.btn-secundario:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.btn-peligro {
+  background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.18);
+}
+
+.btn-peligro:hover {
+  opacity: 0.96;
+  transform: translateY(-1px);
+}
+
 /* =========================
    FORMS
 ========================= */
@@ -392,6 +421,10 @@ textarea:focus {
   background: #edf2f7;
 }
 
+.producto-imagen-detalle {
+  height: 420px;
+}
+
 .producto-imagen-placeholder {
   width: 100%;
   height: 230px;
@@ -444,12 +477,78 @@ textarea:focus {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 16px;
+  align-items: center;
+}
+
+.producto-acciones form {
+  margin: 0;
+}
+
+.producto-acciones .btn-principal,
+.producto-acciones .btn-secundario,
+.producto-acciones .btn-peligro {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.producto-acciones-centro {
+  justify-content: center;
+  align-items: center;
 }
 
 .producto-estado-aviso {
   margin-top: 12px;
   color: var(--danger);
   font-weight: 700;
+}
+
+/* =========================
+   GALERÍA PRODUCTO
+========================= */
+
+.galeria-producto {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.galeria-principal {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #edf2f7;
+}
+
+.galeria-miniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 84px));
+  gap: 12px;
+}
+
+.miniatura-btn {
+  border: 2px solid transparent;
+  background: white;
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+
+.miniatura-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 90, 54, 0.35);
+}
+
+.miniatura-btn.activa {
+  border-color: var(--accent);
+}
+
+.miniatura-img {
+  width: 100%;
+  height: 84px;
+  object-fit: cover;
+  display: block;
 }
 
 /* =========================
@@ -477,6 +576,7 @@ table td {
   text-align: left;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
+  vertical-align: top;
 }
 
 .analytics-table th,
@@ -619,6 +719,180 @@ table tbody tr:hover {
 }
 
 /* =========================
+   CARRITO
+========================= */
+
+.carrito-acciones {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.carrito-vacio-acciones {
+  margin-top: 16px;
+}
+
+.carrito-resumen {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.carrito-resumen p {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
+}
+
+.carrito-resumen span {
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.carrito-resumen strong {
+  font-size: 1.2rem;
+}
+
+/* =========================
+   BADGE CARRITO
+========================= */
+
+.nav-carrito {
+  position: relative;
+}
+
+.carrito-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* =========================
+   TOAST MENSAJE ÉXITO
+========================= */
+
+.toast-exito,
+.toast-error {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.toast-exito {
+  background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%);
+}
+
+/* =========================
+   SUPERADMIN
+========================= */
+
+.superadmin-user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.superadmin-user-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.superadmin-user-meta h4 {
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.superadmin-user-meta p {
+  margin-bottom: 8px;
+  color: #2f3746;
+  word-break: break-word;
+}
+
+.superadmin-user-actions {
+  display: grid;
+  gap: 16px;
+}
+
+.superadmin-role-form {
+  display: grid;
+  gap: 10px;
+}
+
+.superadmin-role-form label,
+.superadmin-state-action label {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.superadmin-role-form select,
+.superadmin-role-form button,
+.superadmin-state-action form,
+.superadmin-state-action button {
+  width: 100%;
+}
+
+.superadmin-state-action {
+  display: grid;
+  gap: 10px;
+}
+
+.superadmin-static-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.superadmin-badge-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================
    ADMIN / PANELS
 ========================= */
 
@@ -698,6 +972,10 @@ strong {
   .page-title h2 {
     font-size: 1.7rem;
   }
+
+  .producto-imagen-detalle {
+    height: 320px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -739,10 +1017,44 @@ strong {
     height: 210px;
   }
 
+  .producto-imagen-detalle {
+    height: 250px;
+  }
+
   .form-container,
   .analytics-kpi-card,
   .analytics-card,
-  .producto-info {
+  .producto-info,
+  .superadmin-user-card {
     padding: 18px;
+  }
+
+  .carrito-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .carrito-acciones .btn-secundario,
+  .carrito-acciones .btn-principal,
+  .carrito-acciones form,
+  .carrito-acciones form button {
+    width: 100%;
+  }
+
+  .galeria-miniaturas {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 70px));
+  }
+
+  .miniatura-img {
+    height: 70px;
+  }
+
+  .superadmin-user-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .superadmin-static-badges {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

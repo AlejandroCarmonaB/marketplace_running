@@ -34,49 +34,80 @@
 
 <section class="form-container">
   <div class="producto-card">
+    <div class="producto-info">
 
-    <% if (producto.imagen_principal) { %>
-      <img 
-        src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
-        alt="Imagen del producto"
-        class="producto-imagen"
-      >
-    <% } else { %>
-      <div class="producto-imagen-placeholder">Sin imagen</div>
-    <% } %>
+      <% if (imagenes && imagenes.length > 0) { %>
+        <div class="galeria-producto">
+          <div class="galeria-principal">
+            <img
+              id="imagenPrincipalProducto"
+              src="<%= imagenes[0].url_imagen.startsWith('http') ? imagenes[0].url_imagen : '/' + imagenes[0].url_imagen %>"
+              alt="Imagen principal del producto"
+              class="producto-imagen producto-imagen-detalle"
+            >
+          </div>
 
-    <h3><%= producto.titulo %></h3>
-    <p><strong>Descripción:</strong> <%= producto.descripcion %></p>
-    <p><strong>Precio:</strong> <%= producto.precio %> €</p>
-    <p><strong>Estado:</strong> <%= producto.estado_fisico %></p>
+          <% if (imagenes.length > 1) { %>
+            <div class="galeria-miniaturas">
+              <% imagenes.forEach((imagen, index) => { %>
+                <button
+                  type="button"
+                  class="miniatura-btn <%= index === 0 ? 'activa' : '' %>"
+                  onclick="cambiarImagenPrincipal(this, '<%= imagen.url_imagen.startsWith('http') ? imagen.url_imagen : '/' + imagen.url_imagen %>')"
+                >
+                  <img
+                    src="<%= imagen.url_imagen.startsWith('http') ? imagen.url_imagen : '/' + imagen.url_imagen %>"
+                    alt="Miniatura <%= index + 1 %>"
+                    class="miniatura-img"
+                  >
+                </button>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      <% } else if (producto.imagen_principal) { %>
+        <img 
+          src="<%= producto.imagen_principal.startsWith('http') ? producto.imagen_principal : '/' + producto.imagen_principal %>"
+          alt="Imagen del producto"
+          class="producto-imagen producto-imagen-detalle"
+        >
+      <% } else { %>
+        <div class="producto-imagen-placeholder">Sin imagen</div>
+      <% } %>
 
-    <p>
-      <strong>Vendedor:</strong> 
-      <a href="/vendedor/<%= producto.id_vendedor %>">
-        <%= producto.vendedor %>
-      </a>
-    </p>
+      <h3><%= producto.titulo %></h3>
+      <p><strong>Descripción:</strong> <%= producto.descripcion %></p>
+      <p><strong>Precio:</strong> <%= Number(producto.precio).toFixed(2) %> €</p>
+      <p><strong>Estado:</strong> <%= producto.estado_fisico %></p>
 
-    <p><strong>Stock disponible:</strong> <%= producto.stock %></p>
+      <p>
+        <strong>Vendedor:</strong> 
+        <a href="/vendedor/<%= producto.id_vendedor %>">
+          <%= producto.vendedor %>
+        </a>
+      </p>
 
-    <% if (esUsuarioNormal && producto.stock > 0 && usuarioSesion.id_usuario !== producto.id_vendedor) { %>
-      <form method="POST" action="/carrito/agregar/<%= producto.id_prod %>">
-        <button type="submit" class="btn-principal">Añadir al carrito</button>
-      </form>
-    <% } %>
+      <p><strong>Stock disponible:</strong> <%= producto.stock %></p>
 
-    <% if (!usuarioSesion) { %>
-      <p>Debes iniciar sesión para comprar.</p>
-    <% } %>
+      <% if (esUsuarioNormal && producto.stock > 0 && usuarioSesion.id_usuario !== producto.id_vendedor) { %>
+        <form method="POST" action="/carrito/agregar/<%= producto.id_prod %>">
+          <button type="submit" class="btn-principal">Añadir al carrito</button>
+        </form>
+      <% } %>
 
-    <% if (producto.stock <= 0 && producto.estado_publicacion !== 'vendido') { %>
-      <p>Producto no disponible.</p>
-    <% } %>
+      <% if (!usuarioSesion) { %>
+        <p>Debes iniciar sesión para comprar.</p>
+      <% } %>
 
-    <% if (producto.estado_publicacion === 'vendido') { %>
-      <p class="producto-estado-aviso">Este producto no está disponible.</p>
-    <% } %>
+      <% if (producto.stock <= 0 && producto.estado_publicacion !== 'vendido') { %>
+        <p>Producto no disponible.</p>
+      <% } %>
 
+      <% if (producto.estado_publicacion === 'vendido') { %>
+        <p class="producto-estado-aviso">Este producto no está disponible.</p>
+      <% } %>
+
+    </div>
   </div>
 </section>
 
@@ -93,7 +124,9 @@
     <form method="POST" action="/producto/<%= producto.id_prod %>/resena" class="formulario">
       <select name="valoracion">
         <% for (let i = 1; i <= 5; i++) { %>
-          <option value="<%= i %>"><%= i %> ⭐</option>
+          <option value="<%= i %>" <%= resenyaUsuario && resenyaUsuario.valoracion == i ? "selected" : "" %>>
+            <%= i %> ⭐
+          </option>
         <% } %>
       </select>
 
@@ -114,12 +147,30 @@
   <% } else { %>
     <% resenyas.forEach(resena => { %>
       <div class="producto-card">
-        <p><strong><%= resena.autor %></strong></p>
-        <p>Valoración: <%= resena.valoracion %> ⭐</p>
-        <p><%= resena.comentario %></p>
+        <div class="producto-info">
+          <p><strong><%= resena.autor %></strong></p>
+          <p>Valoración: <%= resena.valoracion %> ⭐</p>
+          <p><%= resena.comentario %></p>
+          <small><%= new Date(resena.fecha_resenya).toISOString().split('T')[0] %></small>
+        </div>
       </div>
     <% }) %>
   <% } %>
 </section>
+
+<script>
+  function cambiarImagenPrincipal(boton, nuevaRuta) {
+    const imagenPrincipal = document.getElementById('imagenPrincipalProducto');
+    if (imagenPrincipal) {
+      imagenPrincipal.src = nuevaRuta;
+    }
+
+    document.querySelectorAll('.miniatura-btn').forEach(btn => {
+      btn.classList.remove('activa');
+    });
+
+    boton.classList.add('activa');
+  }
+</script>
 
 <%- include('partials/footer') %>

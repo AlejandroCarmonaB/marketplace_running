@@ -1,5 +1,4 @@
 const ResenyaUsuarioService = require('../services/resenyaUsuarioService');
-const pool = require('../config/db');
 
 class ResenyaUsuarioController {
   static async verPerfilVendedor(req, res) {
@@ -7,20 +6,23 @@ class ResenyaUsuarioController {
       const idVendedor = req.params.id;
       const usuarioSesion = req.session.usuario;
 
-      const vendedorQuery = `
-        SELECT id_usuario, nickname, email
-        FROM usuario
-        WHERE id_usuario = $1
-      `;
-      const vendedorResult = await pool.query(vendedorQuery, [idVendedor]);
-      const vendedor = vendedorResult.rows[0];
+      const vendedor = await ResenyaUsuarioService.obtenerVendedorPorId(idVendedor);
 
       if (!vendedor) {
         return res.status(404).send('Vendedor no encontrado');
       }
 
-      const resumen = await ResenyaUsuarioService.obtenerResumenValoracionesVendedor(idVendedor);
-      const resenyas = await ResenyaUsuarioService.obtenerResenyasDeVendedor(idVendedor);
+      const [
+        resumen,
+        resenyas,
+        productosActivos,
+        totalProductosActivos
+      ] = await Promise.all([
+        ResenyaUsuarioService.obtenerResumenValoracionesVendedor(idVendedor),
+        ResenyaUsuarioService.obtenerResenyasDeVendedor(idVendedor),
+        ResenyaUsuarioService.obtenerProductosActivosVendedor(idVendedor),
+        ResenyaUsuarioService.contarProductosActivosVendedor(idVendedor)
+      ]);
 
       let resenyaUsuario = null;
       if (usuarioSesion && usuarioSesion.nombre_rol === 'usuario') {
@@ -40,6 +42,8 @@ class ResenyaUsuarioController {
         resumen,
         resenyas,
         resenyaUsuario,
+        productosActivos,
+        totalProductosActivos,
         usuarioSesion,
         mensajeExito,
         mensajeError

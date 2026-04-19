@@ -31,8 +31,12 @@ app.use(
   }),
 );
 
+// Variables globales disponibles en todas las vistas.
 app.use((req, res, next) => {
   res.locals.usuarioSesion = req.session.usuario || null;
+  res.locals.carritoCount = req.session.carrito ? req.session.carrito.length : 0;
+  res.locals.mensajeToast = req.session.mensajeToast || null;
+  delete req.session.mensajeToast;
   next();
 });
 

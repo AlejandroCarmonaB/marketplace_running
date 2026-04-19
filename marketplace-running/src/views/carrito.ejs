@@ -1,68 +1,59 @@
 <%- include('partials/header') %>
 
 <section class="page-title">
-  <h2>Carrito</h2>
-  <p>Revisa los productos añadidos antes de completar la compra.</p>
+  <h2>Tu carrito</h2>
+  <p>Revisa los productos antes de finalizar la compra</p>
 </section>
 
-<% if (mensajeError) { %>
-  <div class="mensaje-error" id="mensaje-error">
-    <p><%= mensajeError %></p>
-  </div>
-<% } %>
-
 <% if (carrito.length === 0) { %>
+  <div class="no-products">
+    <p>Tu carrito está vacío.</p>
 
-  <p class="no-products">
-    Tu carrito está vacío.
-  </p>
+    <div class="carrito-vacio-acciones">
+      <a href="/" class="btn-secundario">Ver productos</a>
+    </div>
+  </div>
 
 <% } else { %>
 
-  <div class="productos-grid">
-
-    <% carrito.forEach(producto => { %>
-      <div class="producto-card">
-
-        <div class="producto-info">
-          <h3 class="producto-titulo">
-            <a href="/producto/<%= producto.id_prod %>">
-              <%= producto.titulo %>
-            </a>
-          </h3>
-
-          <p class="producto-descripcion">
-            <%= producto.descripcion %>
-          </p>
-
-          <p class="producto-precio">
-            <strong>Precio:</strong> <%= producto.precio %> €
-          </p>
-
-          <p class="producto-categoria">
-            <strong>Categoría:</strong> <%= producto.nombre_categoria %>
-          </p>
-
-          <p class="producto-vendedor">
-            <strong>Vendedor:</strong> <%= producto.vendedor %>
-          </p>
-
-          <form action="/carrito/eliminar/<%= producto.id_prod %>" method="POST">
-            <button type="submit" class="btn-principal">Eliminar</button>
-          </form>
-        </div>
-
-      </div>
-    <% }) %>
-
-  </div>
-
   <section class="form-container">
-    <p><strong>Total:</strong> <%= total.toFixed(2) %> €</p>
+    <div class="productos-grid">
+      <% carrito.forEach(item => { %>
+        <div class="producto-card">
+          <div class="producto-info">
+            <h3><%= item.titulo %></h3>
 
-    <form action="/carrito/comprar" method="POST">
-      <button type="submit" class="btn-principal">Comprar</button>
-    </form>
+            <p><strong>Precio:</strong> <%= Number(item.precio).toFixed(2) %> €</p>
+            <p><strong>Cantidad:</strong> <%= item.cantidad %></p>
+
+            <form action="/carrito/eliminar/<%= item.id_prod %>" method="POST">
+              <button type="submit" class="btn-peligro">
+                Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="carrito-resumen">
+      <p>
+        <span>Total del carrito</span>
+        <strong><%= Number(total).toFixed(2) %> €</strong>
+      </p>
+    </div>
+
+    <div class="carrito-acciones">
+      <a href="/" class="btn-secundario">
+        ← Continuar comprando
+      </a>
+
+      <form action="/carrito/comprar" method="POST">
+        <button type="submit" class="btn-principal">
+          Finalizar compra
+        </button>
+      </form>
+    </div>
   </section>
 
 <% } %>

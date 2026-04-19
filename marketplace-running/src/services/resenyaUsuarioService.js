@@ -2,6 +2,23 @@ const pool = require('../config/db');
 
 class ResenyaUsuarioService {
   /**
+   * Devuelve los datos básicos del vendedor.
+   */
+  static async obtenerVendedorPorId(idVendedor) {
+    const query = `
+      SELECT
+        u.id_usuario,
+        u.nickname
+      FROM usuario u
+      WHERE u.id_usuario = $1
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query, [idVendedor]);
+    return result.rows[0] || null;
+  }
+
+  /**
    * Comprueba si un comprador puede reseñar a un vendedor.
    * Debe existir al menos una transacción completada entre ambos.
    */
@@ -127,6 +144,49 @@ class ResenyaUsuarioService {
 
     const result = await pool.query(query, [idVendedor]);
     return result.rows;
+  }
+
+  /**
+   * Devuelve productos activos publicados por el vendedor.
+   */
+  static async obtenerProductosActivosVendedor(idVendedor) {
+    const query = `
+      SELECT
+        p.id_prod,
+        p.titulo,
+        p.precio,
+        p.estado_fisico,
+        (
+          SELECT ip.url_imagen
+          FROM imagen_producto ip
+          WHERE ip.id_prod = p.id_prod
+          ORDER BY ip.id_imagen ASC
+          LIMIT 1
+        ) AS imagen_principal
+      FROM producto p
+      WHERE p.id_vendedor = $1
+        AND p.estado_publicacion = 'activo'
+      ORDER BY p.id_prod DESC
+      LIMIT 6
+    `;
+
+    const result = await pool.query(query, [idVendedor]);
+    return result.rows;
+  }
+
+  /**
+   * Devuelve el número de productos activos del vendedor.
+   */
+  static async contarProductosActivosVendedor(idVendedor) {
+    const query = `
+      SELECT COUNT(*) AS total
+      FROM producto
+      WHERE id_vendedor = $1
+        AND estado_publicacion = 'activo'
+    `;
+
+    const result = await pool.query(query, [idVendedor]);
+    return Number(result.rows[0].total || 0);
   }
 }
 
