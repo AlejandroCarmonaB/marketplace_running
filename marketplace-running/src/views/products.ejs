@@ -97,6 +97,26 @@
           <p class="producto-vendedor">
             <strong>Vendedor:</strong> <%= producto.vendedor %>
           </p>
+
+          <div class="producto-acciones">
+            <a href="/producto/<%= producto.id_prod %>" class="btn-secundario">Ver detalle</a>
+
+            <% if (
+              usuarioSesion &&
+              usuarioSesion.nombre_rol === 'usuario' &&
+              usuarioSesion.id_usuario !== producto.id_vendedor &&
+              producto.stock > 0 &&
+              producto.estado_publicacion !== 'vendido'
+            ) { %>
+              <% if (idsEnCarrito && idsEnCarrito.includes(producto.id_prod)) { %>
+                <span class="producto-en-carrito">Ya está en tu carrito</span>
+              <% } else { %>
+                <form method="POST" action="/carrito/agregar/<%= producto.id_prod %>">
+                  <button type="submit" class="btn-principal">Añadir al carrito</button>
+                </form>
+              <% } %>
+            <% } %>
+          </div>
         </div>
 
       </div>

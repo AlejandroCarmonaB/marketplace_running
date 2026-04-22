@@ -16,6 +16,8 @@ class ProductoController {
         precioMax
       });
 
+      const idsEnCarrito = (req.session.carrito || []).map(p => p.id_prod);
+
       res.render('products', {
         productos,
         termino,
@@ -23,7 +25,8 @@ class ProductoController {
         filtros: {
           idCategoria,
           precioMax
-        }
+        },
+        idsEnCarrito
       });
     } catch (error) {
       console.error('Error al obtener los productos:', error);
@@ -57,6 +60,10 @@ class ProductoController {
         );
       }
 
+      const productoEnCarrito = (req.session.carrito || []).some(
+        item => item.id_prod === idProducto
+      );
+
       const mensajeExito = req.session.mensajeExito || null;
       const mensajeError = req.session.mensajeError || null;
       delete req.session.mensajeExito;
@@ -68,6 +75,7 @@ class ProductoController {
         resenyas,
         resumen,
         resenyaUsuario,
+        productoEnCarrito,
         mensajeExito,
         mensajeError
       });
@@ -221,13 +229,16 @@ class ProductoController {
         return res.status(404).send('Producto no encontrado o no te pertenece');
       }
 
+      const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
+
       res.render('product_form', {
         categorias,
         error: null,
         exito: null,
         datos: producto,
         modoEdicion: true,
-        idProducto
+        idProducto,
+        imagenes
       });
     } catch (error) {
       console.error('Error al mostrar el formulario de edición:', error);
@@ -249,35 +260,44 @@ class ProductoController {
       const precio = parseFloat(req.body.precio);
 
       if (!titulo || !descripcion || !estadoFisico || !req.body.id_categoria || !req.body.precio) {
+        const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
+
         return res.status(400).render('product_form', {
           categorias,
           error: 'Todos los campos son obligatorios.',
           exito: null,
           datos: { ...req.body, id_prod: idProducto },
           modoEdicion: true,
-          idProducto
+          idProducto,
+          imagenes
         });
       }
 
       if (isNaN(idCategoria) || idCategoria <= 0) {
+        const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
+
         return res.status(400).render('product_form', {
           categorias,
           error: 'La categoría seleccionada no es válida.',
           exito: null,
           datos: { ...req.body, id_prod: idProducto },
           modoEdicion: true,
-          idProducto
+          idProducto,
+          imagenes
         });
       }
 
       if (isNaN(precio) || precio < 0) {
+        const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
+
         return res.status(400).render('product_form', {
           categorias,
           error: 'El precio no es válido.',
           exito: null,
           datos: { ...req.body, id_prod: idProducto },
           modoEdicion: true,
-          idProducto
+          idProducto,
+          imagenes
         });
       }
 
@@ -290,13 +310,16 @@ class ProductoController {
       ];
 
       if (!estadosValidos.includes(estadoFisico)) {
+        const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
+
         return res.status(400).render('product_form', {
           categorias,
           error: 'El estado físico seleccionado no es válido.',
           exito: null,
           datos: { ...req.body, id_prod: idProducto },
           modoEdicion: true,
-          idProducto
+          idProducto,
+          imagenes
         });
       }
 
@@ -314,15 +337,29 @@ class ProductoController {
         return res.status(404).send('Producto no encontrado o no te pertenece');
       }
 
+      let imagenesEliminar = req.body.imagenesEliminar;
+      if (imagenesEliminar) {
+        if (!Array.isArray(imagenesEliminar)) {
+          imagenesEliminar = [imagenesEliminar];
+        }
+
+        await ProductoService.eliminarImagenesPorIds(
+          imagenesEliminar.map(id => Number(id))
+        );
+      }
+
       if (req.files && req.files.length > 0) {
         const rutas = req.files.map(file => `uploads/productos/${file.filename}`);
         await ProductoService.insertarImagenes(idProducto, rutas);
       }
 
       req.session.mensajeExito = 'Producto actualizado correctamente.';
-      return res.redirect('/mis-productos');
+      return res.redirect(`/editar-producto/${idProducto}`);
     } catch (error) {
       console.error('Error al editar producto:', error);
+
+      const idProducto = parseInt(req.params.id);
+      const imagenes = await ProductoService.obtenerImagenesProducto(idProducto);
 
       return res.status(500).render('product_form', {
         categorias,
@@ -330,7 +367,8 @@ class ProductoController {
         exito: null,
         datos: { ...req.body, id_prod: req.params.id },
         modoEdicion: true,
-        idProducto: req.params.id
+        idProducto: req.params.id,
+        imagenes
       });
     }
   }

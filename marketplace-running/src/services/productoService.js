@@ -190,6 +190,17 @@ class ProductoService {
     }
   }
 
+  static async eliminarImagenesPorIds(idsImagenes) {
+    if (!idsImagenes || idsImagenes.length === 0) return;
+
+    const query = `
+      DELETE FROM imagen_producto
+      WHERE id_imagen = ANY($1)
+    `;
+
+    await pool.query(query, [idsImagenes]);
+  }
+
   static async obtenerProductosPorVendedor(idVendedor) {
     const query = `
       SELECT 

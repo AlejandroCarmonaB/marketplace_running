@@ -115,6 +115,13 @@ router.post(
 );
 
 router.post(
+  '/carrito/vaciar',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
+  CarritoController.vaciarCarrito
+);
+
+router.post(
   '/carrito/comprar',
   AuthMiddleware.asegurarAutenticacion,
   AuthMiddleware.soloUsuario,

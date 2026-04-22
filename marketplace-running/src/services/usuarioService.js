@@ -125,6 +125,7 @@ class UsuarioService {
       FROM usuario u
       JOIN rol r ON u.id_rol = r.id_rol
       WHERE COALESCE(u.borrado_logico, false) = false
+        AND LOWER(r.nombre_rol) <> 'superadministrador'
     `;
 
     const values = [];

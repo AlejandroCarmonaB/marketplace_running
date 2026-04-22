@@ -246,17 +246,26 @@ class AdminController {
 
   static async cambiarEstadoProducto(req, res) {
     try {
+      const esAjax = req.get('X-Requested-With') === 'XMLHttpRequest';
       const idProducto = parseInt(req.params.id);
       const { nuevoEstado } = req.body;
 
       const estadosValidos = ['activo', 'inactivo', 'rechazado'];
 
       if (isNaN(idProducto) || idProducto <= 0) {
+        if (esAjax) {
+          return res.status(400).json({ ok: false, mensaje: 'ID de producto no válido.' });
+        }
+
         req.session.mensajeError = 'ID de producto no válido.';
         return res.redirect('/admin/productos');
       }
 
       if (!estadosValidos.includes(nuevoEstado)) {
+        if (esAjax) {
+          return res.status(400).json({ ok: false, mensaje: 'Estado de producto no válido.' });
+        }
+
         req.session.mensajeError = 'Estado de producto no válido.';
         return res.redirect('/admin/productos');
       }
@@ -264,6 +273,10 @@ class AdminController {
       const actualizado = await ProductoService.actualizarEstadoPublicacionAdmin(idProducto, nuevoEstado);
 
       if (!actualizado) {
+        if (esAjax) {
+          return res.status(404).json({ ok: false, mensaje: 'Producto no encontrado.' });
+        }
+
         req.session.mensajeError = 'Producto no encontrado.';
         return res.redirect('/admin/productos');
       }
@@ -276,10 +289,25 @@ class AdminController {
         detalle: `Nuevo estado: ${nuevoEstado}`
       });
 
+      if (esAjax) {
+        return res.json({
+          ok: true,
+          accion: 'actualizar_estado_producto',
+          idProducto,
+          nuevoEstado,
+          mensaje: `Estado del producto actualizado a "${nuevoEstado}".`
+        });
+      }
+
       req.session.mensajeExito = `Estado del producto actualizado a "${nuevoEstado}".`;
       return res.redirect('/admin/productos');
     } catch (error) {
       console.error('Error al cambiar estado de producto:', error);
+
+      if (req.get('X-Requested-With') === 'XMLHttpRequest') {
+        return res.status(500).json({ ok: false, mensaje: 'Error al actualizar el estado del producto.' });
+      }
+
       req.session.mensajeError = 'Error al actualizar el estado del producto.';
       return res.redirect('/admin/productos');
     }
@@ -287,6 +315,7 @@ class AdminController {
 
   static async programarBajaProducto(req, res) {
     try {
+      const esAjax = req.get('X-Requested-With') === 'XMLHttpRequest';
       const idProducto = parseInt(req.params.id);
       const motivo = req.body.motivo?.trim() || 'Baja administrativa';
       const diasGracia = 7;
@@ -299,6 +328,10 @@ class AdminController {
       });
 
       if (!resultado) {
+        if (esAjax) {
+          return res.status(400).json({ ok: false, mensaje: 'No se pudo programar la baja del producto.' });
+        }
+
         req.session.mensajeError = 'No se pudo programar la baja del producto.';
         return res.redirect('/admin/productos');
       }
@@ -311,10 +344,24 @@ class AdminController {
         detalle: `Baja programada hasta ${resultado.fecha_baja_programada}. Motivo: ${motivo}`
       });
 
+      if (esAjax) {
+        return res.json({
+          ok: true,
+          accion: 'eliminar_tarjeta',
+          idProducto,
+          mensaje: 'Baja lógica del producto programada correctamente.'
+        });
+      }
+
       req.session.mensajeExito = 'Baja lógica del producto programada correctamente.';
       return res.redirect('/admin/productos');
     } catch (error) {
       console.error('Error al programar baja lógica de producto:', error);
+
+      if (req.get('X-Requested-With') === 'XMLHttpRequest') {
+        return res.status(500).json({ ok: false, mensaje: 'Error al programar la baja del producto.' });
+      }
+
       req.session.mensajeError = 'Error al programar la baja del producto.';
       return res.redirect('/admin/productos');
     }

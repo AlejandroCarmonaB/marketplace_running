@@ -75,6 +75,12 @@ class CarritoController {
     return res.redirect('/carrito');
   }
 
+  static vaciarCarrito(req, res) {
+    req.session.carrito = [];
+    req.session.mensajeToast = 'Carrito vaciado correctamente.';
+    return res.redirect('/carrito');
+  }
+
   static async comprar(req, res) {
     try {
       const carrito = req.session.carrito || [];

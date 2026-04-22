@@ -20,7 +20,7 @@
       </div>
 
       <nav class="site-nav">
-        <a href="/" class="nav-link">Productos</a>
+        <a href="/" class="nav-link">Catálogo</a>
 
         <% if (usuarioSesion) { %>
 
@@ -38,8 +38,8 @@
           <% } else if (usuarioSesion.nombre_rol === 'administrador') { %>
             <a href="/verificaciones" class="nav-link">Verificaciones</a>
             <a href="/admin/usuarios" class="nav-link">Usuarios</a>
-            <a href="/admin/productos" class="nav-link">Productos</a>
-            <a href="/analitica" class="nav-link nav-link-accent">Analítica</a>
+            <a href="/admin/productos" class="nav-link nav-link-accent">Gestión productos</a>
+            <a href="/analitica" class="nav-link">Analítica</a>
 
           <% } else if (usuarioSesion.nombre_rol === 'verificador') { %>
             <a href="/verificaciones" class="nav-link nav-link-accent">Verificaciones</a>
@@ -50,9 +50,9 @@
           <% } else if (usuarioSesion.nombre_rol === 'superadministrador') { %>
             <a href="/verificaciones" class="nav-link">Verificaciones</a>
             <a href="/admin/usuarios" class="nav-link">Usuarios</a>
-            <a href="/admin/productos" class="nav-link">Productos</a>
+            <a href="/admin/productos" class="nav-link">Gestión productos</a>
             <a href="/analitica" class="nav-link">Analítica</a>
-            <a href="/superadmin" class="nav-link nav-link-accent">Superadmin</a>
+            <a href="/superadmin" class="nav-link nav-link-accent">Auditoría</a>
           <% } %>
 
         <% } else { %>

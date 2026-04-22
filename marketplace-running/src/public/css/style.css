@@ -897,31 +897,59 @@ table tbody tr:hover {
 ========================= */
 
 .rol-administrador {
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
+  --accent: #1d4ed8;
+  --accent-dark: #1e40af;
   --accent-soft: #dbeafe;
-  --header-bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  --header-bg: linear-gradient(135deg, #020617 0%, #1e3a8a 100%);
 }
 
 .rol-analista {
   --accent: #7c3aed;
-  --accent-dark: #6d28d9;
+  --accent-dark: #5b21b6;
   --accent-soft: #ede9fe;
-  --header-bg: linear-gradient(135deg, #111827 0%, #4c1d95 100%);
+  --header-bg: linear-gradient(135deg, #020617 0%, #581c87 100%);
 }
 
 .rol-verificador {
-  --accent: #0f766e;
-  --accent-dark: #0f5e58;
-  --accent-soft: #ccfbf1;
-  --header-bg: linear-gradient(135deg, #0f172a 0%, #115e59 100%);
+  --accent: #059669;
+  --accent-dark: #047857;
+  --accent-soft: #d1fae5;
+  --header-bg: linear-gradient(135deg, #020617 0%, #065f46 100%);
 }
 
 .rol-usuario {
   --accent: #ff5a36;
-  --accent-dark: #e34724;
+  --accent-dark: #dc2626;
   --accent-soft: #ffe4dd;
   --header-bg: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.rol-superadministrador {
+  --accent: #b91c1c;
+  --accent-dark: #7f1d1d;
+  --accent-soft: #fee2e2;
+  --header-bg: linear-gradient(135deg, #020617 0%, #7f1d1d 100%);
+}
+
+/* =========================
+   PRODUCTO EN CARRITO
+========================= */
+
+.producto-en-carrito {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 90, 54, 0.18);
+}
+
+.producto-acciones form {
+  margin: 0;
 }
 
 /* =========================

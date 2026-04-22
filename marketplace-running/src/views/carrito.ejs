@@ -17,6 +17,7 @@
 <% } else { %>
 
   <section class="form-container">
+
     <div class="productos-grid">
       <% carrito.forEach(item => { %>
         <div class="producto-card">
@@ -24,10 +25,10 @@
             <h3><%= item.titulo %></h3>
 
             <p><strong>Precio:</strong> <%= Number(item.precio).toFixed(2) %> €</p>
-            <p><strong>Cantidad:</strong> <%= item.cantidad %></p>
+            <p><strong>Cantidad:</strong> <%= item.cantidad || 1 %></p>
 
             <form action="/carrito/eliminar/<%= item.id_prod %>" method="POST">
-              <button type="submit" class="btn-peligro">
+              <button class="btn-peligro" type="submit">
                 Eliminar
               </button>
             </form>
@@ -48,12 +49,19 @@
         ← Continuar comprando
       </a>
 
+      <form action="/carrito/vaciar" method="POST" onsubmit="return confirm('¿Seguro que quieres vaciar todo el carrito?');">
+        <button type="submit" class="btn-secundario">
+          Vaciar carrito
+        </button>
+      </form>
+
       <form action="/carrito/comprar" method="POST">
         <button type="submit" class="btn-principal">
           Finalizar compra
         </button>
       </form>
     </div>
+
   </section>
 
 <% } %>

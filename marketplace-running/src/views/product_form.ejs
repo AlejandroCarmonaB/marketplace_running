@@ -76,6 +76,28 @@
       </select>
     </div>
 
+    <% if (modoEdicion && typeof imagenes !== 'undefined' && imagenes && imagenes.length > 0) { %>
+      <div class="form-group">
+        <label>Imágenes actuales</label>
+        <div class="galeria-miniaturas">
+          <% imagenes.forEach(img => { %>
+            <div class="imagen-edit-box">
+              <img
+                src="<%= img.url_imagen.startsWith('http') ? img.url_imagen : '/' + img.url_imagen %>"
+                class="miniatura-img"
+                alt="Imagen del producto"
+              >
+              <label class="checkbox-imagen">
+                <input type="checkbox" name="imagenesEliminar" value="<%= img.id_imagen %>">
+                Eliminar
+              </label>
+            </div>
+          <% }) %>
+        </div>
+        <small>Marca las imágenes que quieras eliminar y pulsa Guardar cambios.</small>
+      </div>
+    <% } %>
+
     <div class="form-group">
       <label for="imagenes">Imágenes del producto</label>
 
