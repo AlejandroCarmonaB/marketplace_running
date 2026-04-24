@@ -125,13 +125,26 @@ class ProductoService {
 
   static async obtenerImagenesProducto(idProducto) {
     const query = `
-      SELECT id_imagen, url_imagen
+      SELECT id_imagen, id_prod, url_imagen, public_id
       FROM imagen_producto
       WHERE id_prod = $1
       ORDER BY id_imagen ASC
     `;
 
     const result = await pool.query(query, [idProducto]);
+    return result.rows;
+  }
+
+  static async obtenerImagenesPorIdsDeProducto(idProducto, idsImagenes) {
+    const query = `
+      SELECT id_imagen, id_prod, url_imagen, public_id
+      FROM imagen_producto
+      WHERE id_prod = $1
+        AND id_imagen = ANY($2)
+      ORDER BY id_imagen ASC
+    `;
+
+    const result = await pool.query(query, [idProducto, idsImagenes]);
     return result.rows;
   }
 
@@ -179,14 +192,14 @@ class ProductoService {
     return result.rows[0] || null;
   }
 
-  static async insertarImagenes(idProducto, rutas) {
+  static async insertarImagenes(idProducto, imagenesSubidas) {
     const query = `
-      INSERT INTO imagen_producto (id_prod, url_imagen)
-      VALUES ($1, $2)
+      INSERT INTO imagen_producto (id_prod, url_imagen, public_id)
+      VALUES ($1, $2, $3)
     `;
 
-    for (const ruta of rutas) {
-      await pool.query(query, [idProducto, ruta]);
+    for (const imagen of imagenesSubidas) {
+      await pool.query(query, [idProducto, imagen.url_imagen, imagen.public_id]);
     }
   }
 

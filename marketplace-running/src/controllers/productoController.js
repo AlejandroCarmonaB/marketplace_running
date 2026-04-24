@@ -1,5 +1,32 @@
+const { Readable } = require('stream');
+const cloudinary = require('../config/cloudinary');
 const ProductoService = require('../services/productoService');
 const ResenyaProductoService = require('../services/resenyaProductoService');
+
+function subirBufferACloudinary(fileBuffer, folder = 'marketplace_running/productos') {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: 'image'
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    Readable.from(fileBuffer).pipe(uploadStream);
+  });
+}
+
+async function borrarImagenDeCloudinary(publicId) {
+  if (!publicId) return;
+
+  await cloudinary.uploader.destroy(publicId, {
+    resource_type: 'image'
+  });
+}
 
 class ProductoController {
   static async mostrarProductos(req, res) {
@@ -178,8 +205,18 @@ class ProductoController {
       });
 
       if (req.files && req.files.length > 0) {
-        const rutas = req.files.map(file => `uploads/productos/${file.filename}`);
-        await ProductoService.insertarImagenes(productoCreado.id_prod, rutas);
+        const imagenesSubidas = [];
+
+        for (const file of req.files) {
+          const resultadoCloudinary = await subirBufferACloudinary(file.buffer);
+
+          imagenesSubidas.push({
+            url_imagen: resultadoCloudinary.secure_url,
+            public_id: resultadoCloudinary.public_id
+          });
+        }
+
+        await ProductoService.insertarImagenes(productoCreado.id_prod, imagenesSubidas);
       }
 
       req.session.mensajeExito = 'Producto publicado correctamente.';
@@ -343,14 +380,31 @@ class ProductoController {
           imagenesEliminar = [imagenesEliminar];
         }
 
-        await ProductoService.eliminarImagenesPorIds(
-          imagenesEliminar.map(id => Number(id))
-        );
+        const idsImagenesEliminar = imagenesEliminar.map(id => Number(id));
+        const imagenesBD = await ProductoService.obtenerImagenesPorIdsDeProducto(idProducto, idsImagenesEliminar);
+
+        for (const imagen of imagenesBD) {
+          if (imagen.public_id) {
+            await borrarImagenDeCloudinary(imagen.public_id);
+          }
+        }
+
+        await ProductoService.eliminarImagenesPorIds(idsImagenesEliminar);
       }
 
       if (req.files && req.files.length > 0) {
-        const rutas = req.files.map(file => `uploads/productos/${file.filename}`);
-        await ProductoService.insertarImagenes(idProducto, rutas);
+        const imagenesSubidas = [];
+
+        for (const file of req.files) {
+          const resultadoCloudinary = await subirBufferACloudinary(file.buffer);
+
+          imagenesSubidas.push({
+            url_imagen: resultadoCloudinary.secure_url,
+            public_id: resultadoCloudinary.public_id
+          });
+        }
+
+        await ProductoService.insertarImagenes(idProducto, imagenesSubidas);
       }
 
       req.session.mensajeExito = 'Producto actualizado correctamente.';
