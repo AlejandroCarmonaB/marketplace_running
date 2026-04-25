@@ -19,7 +19,7 @@
         </a>
       </div>
 
-      <nav class="site-nav">
+      <nav class="site-nav" id="siteNav">
         <a href="/" class="nav-link">Catálogo</a>
 
         <% if (usuarioSesion) { %>
@@ -62,7 +62,7 @@
       </nav>
 
       <% if (usuarioSesion) { %>
-        <div class="site-user-box">
+        <div class="site-user-box" id="userBox">
           <div class="site-user-meta">
             <span class="site-user-greeting">Hola, <%= usuarioSesion.nickname %></span>
             <span class="site-user-role"><%= usuarioSesion.nombre_rol %></span>
@@ -70,8 +70,24 @@
           <a href="/logout" class="site-user-logout">Cerrar sesión</a>
         </div>
       <% } %>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </header>
+
+  <script>
+    const navToggle = document.getElementById('navToggle');
+    const siteNav = document.getElementById('siteNav');
+    const userBox = document.getElementById('userBox');
+
+    navToggle.addEventListener('click', () => {
+      siteNav.classList.toggle('nav-abierto');
+      if (userBox) userBox.classList.toggle('nav-abierto');
+    });
+  </script>
 
   <% if (mensajeToast) { %>
     <div class="toast-exito" id="toastExito">
