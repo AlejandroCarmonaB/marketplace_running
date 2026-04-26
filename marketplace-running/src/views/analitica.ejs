@@ -23,7 +23,7 @@
 <% if (vista === 'general') { %>
 
   <section class="analytics-filters-wrapper">
-    <form method="GET" action="/analitica" class="analytics-filters">
+    <form method="GET" action="/analitica" class="analytics-filters js-analitica-form">
       <input type="hidden" name="vista" value="general">
 
       <div class="analytics-filter-group">
@@ -342,7 +342,7 @@
 <% } else { %>
 
   <section class="analytics-filters-wrapper">
-    <form method="GET" action="/analitica" class="analytics-filters">
+    <form method="GET" action="/analitica" class="analytics-filters js-analitica-form">
       <input type="hidden" name="vista" value="usuario">
 
       <div class="analytics-filter-group">
@@ -678,5 +678,21 @@
     }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const scrollY = sessionStorage.getItem('analitica_scroll');
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY));
+      sessionStorage.removeItem('analitica_scroll');
+    }
+  });
+
+  document.querySelectorAll('.js-analitica-form').forEach(form => {
+    form.addEventListener('submit', () => {
+      sessionStorage.setItem('analitica_scroll', window.scrollY);
+    });
+  });
+</script>
 
 <%- include('partials/footer') %>

@@ -70,7 +70,8 @@
           <a href="/logout" class="site-user-logout">Cerrar sesión</a>
         </div>
       <% } %>
-      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
+
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" type="button">
         <span></span>
         <span></span>
         <span></span>
@@ -83,10 +84,15 @@
     const siteNav = document.getElementById('siteNav');
     const userBox = document.getElementById('userBox');
 
-    navToggle.addEventListener('click', () => {
-      siteNav.classList.toggle('nav-abierto');
-      if (userBox) userBox.classList.toggle('nav-abierto');
-    });
+    if (navToggle && siteNav) {
+      navToggle.addEventListener('click', () => {
+        siteNav.classList.toggle('nav-abierto');
+
+        if (userBox) {
+          userBox.classList.toggle('nav-abierto');
+        }
+      });
+    }
   </script>
 
   <% if (mensajeToast) { %>

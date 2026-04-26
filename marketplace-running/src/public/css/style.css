@@ -80,7 +80,7 @@ a {
   margin: 0 auto;
   padding: 18px 24px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 24px;
   align-items: center;
 }
@@ -189,6 +189,38 @@ a {
 .site-user-logout:hover {
   background: rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
+}
+
+/* =========================
+   MENÚ HAMBURGUESA
+========================= */
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  box-shadow: none;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: none;
+  opacity: 1;
 }
 
 /* =========================
@@ -967,42 +999,10 @@ strong {
 }
 
 /* =========================
-   MENÚ HAMBURGUESA
-========================= */
-
-.nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  box-shadow: none;
-  flex-direction: column;
-  gap: 5px;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-toggle span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: white;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-.nav-toggle:hover {
-  background: rgba(255,255,255,0.1);
-  transform: none;
-  opacity: 1;
-}
-
-/* =========================
    RESPONSIVE
 ========================= */
 
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .nav-toggle {
     display: flex;
   }
@@ -1045,9 +1045,15 @@ strong {
     padding-bottom: 10px;
   }
 
+  .site-user-meta {
+    align-items: center;
+    text-align: center;
+  }
+
   .site-user-logout {
     width: 100%;
     text-align: center;
+    justify-content: center;
   }
 }
 
@@ -1071,20 +1077,32 @@ strong {
 
   .producto-imagen-detalle {
     height: 320px;
+    object-fit: contain;
   }
 }
 
 @media (max-width: 640px) {
   .site-header-inner {
-    padding: 16px;
+    padding: 14px 16px;
   }
 
   .site-brand-link {
-    align-items: flex-start;
+    align-items: center;
+  }
+
+  .site-brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 0.9rem;
   }
 
   .site-brand-text h1 {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
+  }
+
+  .site-brand-text p {
+    font-size: 0.78rem;
   }
 
   .site-nav {
@@ -1104,8 +1122,13 @@ strong {
     align-items: stretch;
   }
 
+  .site-user-box.nav-abierto {
+    display: flex;
+  }
+
   .site-user-meta {
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
   .producto-imagen,
@@ -1115,6 +1138,7 @@ strong {
 
   .producto-imagen-detalle {
     height: 250px;
+    object-fit: contain;
   }
 
   .form-container,
