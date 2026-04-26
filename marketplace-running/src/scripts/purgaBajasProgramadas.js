@@ -1,3 +1,4 @@
+// Script para purgar productos y usuarios caducados de forma automática (ejecutar con cron).
 require('dotenv').config();
 const pool = require('../config/db');
 const UsuarioService = require('../services/usuarioService');

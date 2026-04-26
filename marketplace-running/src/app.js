@@ -1,3 +1,4 @@
+// Archivo principal de la aplicación Express. Configura el servidor, sesiones, vistas y rutas.
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
@@ -42,8 +43,6 @@ app.use((req, res, next) => {
 
 // Rutas principales.
 app.use("/", indexRoutes);
-app.use("/", resenyaUsuarioRoutes);
-app.use("/", resenyaProductoRoutes);
 
 // Puerto del servidor.
 const PORT = process.env.PORT || 3000;

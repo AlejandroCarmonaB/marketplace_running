@@ -92,6 +92,15 @@ a {
   text-decoration: none;
 }
 
+.logo-img {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  object-fit: contain;
+  background: white;
+  box-shadow: 0 10px 24px rgba(255, 90, 54, 0.28);
+}
+
 .site-brand-mark {
   width: 52px;
   height: 52px;
@@ -241,6 +250,79 @@ a {
   padding: 22px;
   text-align: center;
   box-shadow: 0 14px 28px rgba(17, 24, 39, 0.16);
+}
+
+/* =========================
+   FOOTER PRO
+========================= */
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  text-align: left;
+}
+
+.footer-brand-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.footer-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: white;
+}
+
+.footer-brand h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.footer-brand p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.95rem;
+  max-width: 360px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-links h4 {
+  margin-bottom: 6px;
+  color: white;
+  font-size: 1rem;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.92rem;
+}
+
+.footer-links a:hover {
+  color: white;
+}
+
+.footer-links span {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-bottom {
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 14px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* =========================
@@ -1090,6 +1172,12 @@ strong {
     align-items: center;
   }
 
+  .logo-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+
   .site-brand-mark {
     width: 44px;
     height: 44px;
@@ -1129,6 +1217,18 @@ strong {
   .site-user-meta {
     align-items: center;
     text-align: center;
+  }
+
+  .footer-grid {
+    text-align: center;
+  }
+
+  .footer-brand-top {
+    justify-content: center;
+  }
+
+  .footer-brand p {
+    margin: 0 auto;
   }
 
   .producto-imagen,

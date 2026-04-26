@@ -1,12 +1,17 @@
+// Rutas relacionadas con las reseñas de usuarios (ver perfil de vendedor, publicar reseña).
 const express = require('express');
 const router = express.Router();
 
 const ResenyaUsuarioController = require('../controllers/resenyaUsuarioController');
+const AuthMiddleware = require('../middlewares/authMiddleware');
 
-// 🔹 Ver perfil del vendedor
 router.get('/vendedor/:id', ResenyaUsuarioController.verPerfilVendedor);
 
-// 🔹 Guardar reseña (crear o editar)
-router.post('/vendedor/:id/resena', ResenyaUsuarioController.guardarResenya);
+router.post(
+  '/vendedor/:id/resena',
+  AuthMiddleware.asegurarAutenticacion,
+  AuthMiddleware.soloUsuario,
+  ResenyaUsuarioController.guardarResenya
+);
 
 module.exports = router;

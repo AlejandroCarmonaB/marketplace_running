@@ -1,9 +1,51 @@
-  </main>
+<footer class="site-footer">
+  <div class="site-footer-inner">
 
-  <footer class="site-footer">
-    <div class="site-footer-inner">
-      <p>Marketplace Running · TFG DAW</p>
+    <div class="footer-grid">
+
+      <!-- MARCA -->
+      <div class="footer-brand">
+        <div class="footer-brand-top">
+          <img src="/img/logo.png" alt="RunCycle" class="footer-logo">
+          <h3>RunCycle</h3>
+        </div>
+        <p>
+          Marketplace especializado en running de segunda mano con verificación
+          para garantizar confianza y seguridad en cada transacción.
+        </p>
+      </div>
+
+      <!-- NAVEGACIÓN -->
+      <div class="footer-links">
+        <h4>Navegación</h4>
+        <a href="/">Catálogo</a>
+
+        <% if (usuarioSesion && usuarioSesion.nombre_rol === 'usuario') { %>
+          <a href="/carrito">Carrito</a>
+          <a href="/mis-productos">Mis productos</a>
+        <% } %>
+      </div>
+
+      <!-- INFORMACIÓN -->
+      <div class="footer-links">
+        <h4>Información</h4>
+        <span>Proyecto TFG DAW</span>
+        <span>Desarrollado con Node.js, Express y PostgreSQL</span>
+        <span>Despliegue en Render + Neon</span>
+      </div>
+
+      <!-- CONTACTO / EXTRA -->
+      <div class="footer-links">
+        <h4>Autor</h4>
+        <span>Alejandro Carmona</span>
+        <span>DAW - Desarrollo de Aplicaciones Web</span>
+      </div>
+
     </div>
-  </footer>
-</body>
-</html>
+
+    <div class="footer-bottom">
+      <p>© 2026 RunCycle — Todos los derechos reservados</p>
+    </div>
+
+  </div>
+</footer>
