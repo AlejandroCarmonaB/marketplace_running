@@ -123,7 +123,7 @@ marketplace_running/
 
 ## Despliegue en Render
 
-La aplicación está desplegada en Render con conexión a Neon (PostgreSQL) y Cloudinary.
+La aplicación está desplegada en Render con conexión a Neon (PostgreSQL) y Cloudinary y accesible en la siguiente URL: https://marketplace-running.onrender.com
 
 - **Build Command:** `npm install`
 - **Start Command:** `node src/app.js`
