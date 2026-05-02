@@ -1,6 +1,6 @@
-# RunCycle — Marketplace de productos de running
+# RunCycle — Marketplace de productos deportivos de segunda mano
 
-RunCycle es una plataforma de compraventa de segunda mano especializada en productos de running y ciclismo. Permite a los usuarios publicar, comprar y valorar productos, con un sistema de verificación de transacciones y gestión por roles.
+RunCycle es una plataforma web de compraventa de segunda mano especializada en productos de running, diseñada para ofrecer un entorno seguro mediante un sistema de verificación de transacciones.
 
 ---
 
@@ -18,7 +18,7 @@ RunCycle es una plataforma de compraventa de segunda mano especializada en produ
 
 ---
 
-## Requisitos previos
+## ⚙️ Requisitos previos
 
 - Node.js v18 o superior
 - Cuenta en [Neon](https://neon.tech) con una base de datos PostgreSQL creada
@@ -54,6 +54,7 @@ CLOUDINARY_API_SECRET=tu_api_secret
 PORT=3000
 NODE_ENV=development
 ```
+
 
 ### 4. Arrancar la aplicación
 
@@ -97,15 +98,14 @@ marketplace_running/
 
 ---
 
-## Despliegue en Render
+## Flujo principal
 
-La aplicación está desplegada en Render con conexión a Neon (PostgreSQL) y Cloudinary.
-
-- **Build Command:** `npm install`
-- **Start Command:** `node src/app.js`
-- Las variables de entorno se configuran directamente en el panel de Render
-
-Cualquier push a la rama `main` redespliega la aplicación automáticamente.
+1. El usuario añade productos al carrito
+2. Se genera una transacción en estado `pago_retenido`
+3. El producto pasa a verificación
+4. Resultado:
+   -  Aprobado → transacción completada, pago liberado al vendedor
+   -  Rechazado → reembolso al comprador
 
 ---
 
@@ -118,6 +118,18 @@ Cualquier push a la rama `main` redespliega la aplicación automáticamente.
 - **R05 — Reseñas:** valoración de productos y vendedores
 - **R06 — Administración:** gestión de usuarios, productos y auditoría
 - **R07 — Analítica:** dashboard con métricas de ventas, comisiones y verificaciones
+
+---
+
+## Despliegue en Render
+
+La aplicación está desplegada en Render con conexión a Neon (PostgreSQL) y Cloudinary.
+
+- **Build Command:** `npm install`
+- **Start Command:** `node src/app.js`
+- Las variables de entorno se configuran directamente en el panel de Render
+
+Cualquier push a la rama `main` redespliega la aplicación automáticamente.
 
 ---
 
